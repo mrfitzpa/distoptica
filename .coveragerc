@@ -1,0 +1,16 @@
+[paths]
+source =
+    ../distoptica
+    */site-packages/distoptica
+
+[run]
+branch = true
+source =
+    distoptica
+    .
+omit =
+    */distoptica/version.py
+
+[report]
+show_missing = true
+precision = 2

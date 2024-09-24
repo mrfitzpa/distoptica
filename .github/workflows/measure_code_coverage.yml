@@ -1,0 +1,61 @@
+name: Measure code coverage
+# This workflow measures the code coverage of the unit tests for the most recent
+# version of Python on a virtual machine with the latest Ubuntu operating
+# system. A badge displaying the code coverage percentage is subsequently made
+# for the README located at the root of the repository.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  build:
+    if: github.event.pull_request.draft == false
+    
+    runs-on: ubuntu-latest
+    env:
+      PY_COLORS: 1
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+        
+    - name: Measure code coverage via tox
+      run: python -m tox -e py312,report
+    
+    - name: Set environment variable for badge
+      run: |
+        echo "COV_PERCENT=$(jq .totals.percent_covered tests/coverage.json \
+          | xargs printf "%.0f")" >> $GITHUB_ENV
+    
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v4
+      with:
+        name: code_coverage_report
+        path: tests/coverage.json
+        if-no-files-found: error
+    
+    - name: Create badge
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: schneegans/dynamic-badges-action@v1.7.0
+      with:
+        auth: ${{ secrets.CODE_COVERAGE_SECRET }}
+        gistID: b7ef7892a2b5cf21ba4b6163c324afbe
+        filename: distoptica_coverage_badge.json
+        label: Code Coverage
+        message: ${{ env.COV_PERCENT }}%
+        minColorRange: 50
+        maxColorRange: 100
+        valColorRange: ${{ env.COV_PERCENT }}

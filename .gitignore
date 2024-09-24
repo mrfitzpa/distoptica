@@ -1,0 +1,45 @@
+# Ignore select directories.
+__pycache__/
+.ipynb_checkpoints/
+.tox/
+htmlcov/
+dist/
+docs/_autosummary/
+docs/_build/
+pages/
+
+# Ignore select files.
+.coverage
+.python-version
+distoptica/version.py
+tests/coverage.json
+
+# Ignore generated output coverage files.
+tests/coverage*
+tests/.coverage*
+
+# Ignore .pyc files.
+*.pyc
+
+# Ignore JSON files.
+*.json
+
+# Ignore backup files.
+\#*#
+*.bak
+*~
+
+# Ignore pip install build files.
+build/
+*.egg-info/
+*/_version.py
+
+# Ignore SLURM output files.
+slurm-*.out
+
+# Ignore most .ipynb files.
+*.ipynb
+!basic_usage.ipynb
+
+# Ignore .h5 data files.
+*.h5

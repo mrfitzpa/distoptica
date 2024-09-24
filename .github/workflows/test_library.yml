@@ -1,0 +1,38 @@
+name: Test library
+# This workflow runs the unit tests for the Python versions 3.8, 3.9, 3.10, and
+# 3.11.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  build:
+    if: github.event.pull_request.draft == false
+    
+    runs-on: ubuntu-latest
+    env:
+      PY_COLORS: 1
+    strategy:
+      max-parallel: 5
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+        
+    - name: Measure code coverage via tox
+      run: python -m tox -e py
