@@ -1,7 +1,7 @@
 # DistOptica (distoptica)
 
 [![Test library](https://github.com/mrfitzpa/distoptica/actions/workflows/test_library.yml/badge.svg)](https://github.com/mrfitzpa/distoptica/actions/workflows/test_library.yml)
-[![Code Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mrfitzpa/b7ef7892a2b5cf21ba4b6163c324afbe/raw/distoptica_coverage_badge.json)](https://github.com/mrfitzpa/distoptica/actions/workflows/measure_code_coverage.yml)
+[![Code Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mrfitzpa/e3d00c6ff78c39d52c8b3f1ca5da9065/raw/distoptica_coverage_badge.json)](https://github.com/mrfitzpa/distoptica/actions/workflows/measure_code_coverage.yml)
 [![Documentation](https://img.shields.io/badge/docs-read-brightgreen)](https://mrfitzpa.github.io/distoptica)
 [![PyPi Version](https://img.shields.io/pypi/v/distoptica.svg)](https://pypi.org/project/distoptica)
 [![Conda-Forge Version](https://img.shields.io/conda/vn/conda-forge/distoptica.svg)](https://anaconda.org/conda-forge/distoptica)

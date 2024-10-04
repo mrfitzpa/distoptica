@@ -46,7 +46,8 @@ tests = [
 ]
 examples = [
     "jupyter",
-    "ipympl"
+    "ipympl",
+    "hyperspy[all]"
 ]
 docs = [
     "sphinx<7",

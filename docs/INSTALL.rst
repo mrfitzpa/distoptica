@@ -10,6 +10,12 @@ For all installation scenarios, first open up the appropriate command line
 interface. On Unix-based systems, you would open a terminal. On Windows systems
 you would open an Anaconda Prompt as an administrator.
 
+Before installing ``distoptica``, it is recommended that users install
+``PyTorch`` in the same environment that they intend to install ``distoptica``
+according to the instructions given `here
+<https://pytorch.org/get-started/locally/>`_ for their preferred PyTorch
+installation option.
+
 Installing distoptica using pip
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
