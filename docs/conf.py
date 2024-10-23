@@ -186,7 +186,7 @@ if build_all_docs is not None:
     cmd_output = cmd_output_as_bytes.decode("utf-8")
     tags = cmd_output.rstrip("\n").split("\n")
 
-    pattern = r"v[0-9]+\.[0.9]+\.[0-9]+"
+    pattern = r"v[0-9]+\.[0-9]+\.[0-9]+"
     release_tags = tuple(tag for tag in tags if re.fullmatch(pattern, tag))
 
     if (current_version != "latest"):
