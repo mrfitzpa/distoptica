@@ -3126,6 +3126,9 @@ class DistortionModel(_cls_alias):
         self._jacobian_weights_for_distorting_then_resampling = None
         self._jacobian_weights_for_undistorting_then_resampling = None
 
+        self._out_of_bounds_map_of_undistorted_then_resampled_images = None
+        self._out_of_bounds_map_of_distorted_then_resampled_images = None
+
         return None
 
 
@@ -3357,8 +3360,6 @@ class DistortionModel(_cls_alias):
 
 
     def _update_attr_subset_1(self):
-        distortion_model_is_trivial = self._is_trivial
-
         sampling_grid = self._sampling_grid
         inputs = {"q_x": sampling_grid[0], "q_y": sampling_grid[1]}
             
@@ -3379,6 +3380,10 @@ class DistortionModel(_cls_alias):
         self._jacobian_weights_for_undistorting_then_resampling = \
                 torch.abs(J[0, 0]*J[1, 1] - J[1, 0]*J[0, 1])
 
+        self._out_of_bounds_map_of_undistorted_then_resampled_images = \
+            ((q_x*q_x.shape[1]<0.5) | (q_x.shape[1]-0.5<q_x*q_x.shape[1])
+             | (q_y*q_y.shape[0]<0.5) | (q_y.shape[0]-0.5<q_y*q_y.shape[0]))
+
         method_name = "eval_forward_output"
         method_alias = getattr(self._coord_transform_right_inverse, method_name)
         u_x, u_y = method_alias(inputs=dict())
@@ -3388,10 +3393,8 @@ class DistortionModel(_cls_alias):
         self._renormalized_flow_field_of_coord_transform_right_inverse = \
             (2*(u_x-0.5), -2*(u_y-0.5))
 
-        method_alias = \
-            self._calc_jacobian_weights_for_distorting_then_resampling
         self._jacobian_weights_for_distorting_then_resampling = \
-            method_alias(u_x, u_y)
+            self._calc_jacobian_weights_for_distorting_then_resampling(u_x, u_y)
 
         self._convergence_map_of_distorted_then_resampled_images = \
             self._coord_transform_right_inverse.convergence_map
@@ -3400,6 +3403,10 @@ class DistortionModel(_cls_alias):
             {"mat": self._coord_transform_right_inverse.convergence_map}
         self._mask_frame_of_distorted_then_resampled_images = \
             _calc_minimum_frame_to_mask_all_zero_valued_elems(**kwargs)
+
+        self._out_of_bounds_map_of_distorted_then_resampled_images = \
+            ((u_x*u_x.shape[1]<0.5) | (u_x.shape[1]-0.5<u_x*u_x.shape[1])
+             | (u_y*u_y.shape[0]<0.5) | (u_y.shape[0]-0.5<u_y*u_y.shape[0]))
 
         return None
 
@@ -3545,8 +3552,6 @@ class DistortionModel(_cls_alias):
 
 
     def _update_attr_subset_2(self):
-        distortion_model_is_trivial = self._is_trivial
-
         sampling_grid = self._sampling_grid
 
         coord_transform_inputs = dict()
@@ -3574,6 +3579,10 @@ class DistortionModel(_cls_alias):
             self._coord_transform_right_inverse.eval_J(**kwargs)
         self._jacobian_weights_for_undistorting_then_resampling = \
             torch.abs(J[0, 0]*J[1, 1] - J[1, 0]*J[0, 1])
+
+        self._out_of_bounds_map_of_undistorted_then_resampled_images = \
+            ((q_x*q_x.shape[1]<0.5) | (q_x.shape[1]-0.5<q_x*q_x.shape[1])
+             | (q_y*q_y.shape[0]<0.5) | (q_y.shape[0]-0.5<q_y*q_y.shape[0]))
 
         return None
 
@@ -3725,7 +3734,7 @@ class DistortionModel(_cls_alias):
 
         Returns
         -------
-        sampling_grid : `torch.Tensor` (`bool`, ndim=2)
+        convergence_map_of_distorted_then_resampled_images : `torch.Tensor` (`bool`, ndim=2)
             The attribute
             :attr:`distoptica.DistortionModel.convergence_map_of_distorted_then_resampled_images`.
 
@@ -4018,6 +4027,174 @@ class DistortionModel(_cls_alias):
         """
         method_alias = \
             self.get_flow_field_of_coord_transform_right_inverse
+        result = \
+            method_alias(deep_copy=True)
+
+        return result
+
+
+
+    def get_out_of_bounds_map_of_undistorted_then_resampled_images(
+            self, deep_copy=_default_deep_copy):
+        r"""Return the out-of-bounds map of undistorted then resampled images.
+
+        Parameters
+        ----------
+        deep_copy : `bool`, optional
+            Let ``out_of_bounds_map_of_undistorted_then_resampled_images``
+            denote the attribute
+            :attr:`distoptica.DistortionModel.out_of_bounds_map_of_undistorted_then_resampled_images`.
+
+            If ``deep_copy`` is set to ``True``, then a deep copy of
+            ``out_of_bounds_map_of_undistorted_then_resampled_images`` is
+            returned.  Otherwise, a reference to
+            ``out_of_bounds_map_of_undistorted_then_resampled_images`` is
+            returned.
+
+        Returns
+        -------
+        out_of_bounds_map_of_undistorted_then_resampled_images : `torch.Tensor` (`bool`, ndim=2)
+            The attribute
+            :attr:`distoptica.DistortionModel.out_of_bounds_map_of_undistorted_then_resampled_images`.
+
+        """
+        if self._out_of_bounds_map_of_undistorted_then_resampled_images is None:
+            self._update_attr_subset_2()
+
+        params = {"deep_copy": deep_copy}
+        deep_copy = _check_and_convert_deep_copy(params)
+
+        if (deep_copy == True):
+            out_of_bounds_map = \
+                self._out_of_bounds_map_of_undistorted_then_resampled_images
+            out_of_bounds_map_of_undistorted_then_resampled_images = \
+                out_of_bounds_map.detach().clone()
+        else:
+            out_of_bounds_map_of_undistorted_then_resampled_images = \
+                self._out_of_bounds_map_of_undistorted_then_resampled_images
+
+        return out_of_bounds_map_of_undistorted_then_resampled_images
+
+
+
+    @property
+    def out_of_bounds_map_of_undistorted_then_resampled_images(self):
+        r"""`torch.Tensor`: The out-of-bounds map of undistorted then resampled 
+        images.
+
+        See the summary documentation of the class
+        :class:`distoptica.DistortionModel` for additional context.
+
+        ``out_of_bounds_map_of_undistorted_then_resampled_images`` is a PyTorch
+        tensor having a shape equal to
+        :math:`\left(N_{\mathring{\mathcal{I}};y},
+        N_{\mathring{\mathcal{I}};x}\right)`, where
+        :math:`N_{\mathring{\mathcal{I}};x}` and
+        :math:`N_{\mathring{\mathcal{I}};y}` being the number of pixels in the
+        sampling grid from left to right and top to bottom respectively.
+
+        Let ``sampling_grid`` and ``flow_field_of_coord_transform`` denote the
+        attributes :attr:`distoptica.DistortionModel.sampling_grid` and
+        :attr:`distoptica.DistortionModel.flow_field_of_coord_transform`
+        respectively. Furthermore, let ``q_x =
+        sampling_grid[0]+flow_field_of_coord_transform[0]`` and ``q_y =
+        sampling_grid[1]+flow_field_of_coord_transform[1]``.
+
+        ``out_of_bounds_map_of_undistorted_then_resampled_images`` is equal to
+        ``(q_x*q_x.shape[1]<=0.5) | (q_x.shape[1]-0.5<=q_x*q_x.shape[1]) |
+        (q_y*q_y.shape[0]<=0.5) | (q_y.shape[0]-0.5<=q_y*q_y.shape[0])``.
+
+        Note that ``out_of_bounds_map_of_coord_transform`` should be considered
+        **read-only**.
+
+        """
+        method_alias = \
+            self.get_out_of_bounds_map_of_undistorted_then_resampled_images
+        result = \
+            method_alias(deep_copy=True)
+
+        return result
+
+
+
+    def get_out_of_bounds_map_of_distorted_then_resampled_images(
+            self, deep_copy=_default_deep_copy):
+        r"""Return the out-of-bounds map of distorted then resampled images.
+
+        Parameters
+        ----------
+        deep_copy : `bool`, optional
+            Let ``out_of_bounds_map_of_distorted_then_resampled_images``
+            denote the attribute
+            :attr:`distoptica.DistortionModel.out_of_bounds_map_of_distorted_then_resampled_images`.
+
+            If ``deep_copy`` is set to ``True``, then a deep copy of
+            ``out_of_bounds_map_of_distorted_then_resampled_images`` is
+            returned.  Otherwise, a reference to
+            ``out_of_bounds_map_of_distorted_then_resampled_images`` is
+            returned.
+
+        Returns
+        -------
+        out_of_bounds_map_of_distorted_then_resampled_images : `torch.Tensor` (`bool`, ndim=2)
+            The attribute
+            :attr:`distoptica.DistortionModel.out_of_bounds_map_of_distorted_then_resampled_images`.
+
+        """
+        if self._out_of_bounds_map_of_distorted_then_resampled_images is None:
+            self._update_attr_subset_1()
+
+        params = {"deep_copy": deep_copy}
+        deep_copy = _check_and_convert_deep_copy(params)
+
+        if (deep_copy == True):
+            out_of_bounds_map = \
+                self._out_of_bounds_map_of_distorted_then_resampled_images
+            out_of_bounds_map_of_distorted_then_resampled_images = \
+                out_of_bounds_map.detach().clone()
+        else:
+            out_of_bounds_map_of_distorted_then_resampled_images = \
+                self._out_of_bounds_map_of_distorted_then_resampled_images
+
+        return out_of_bounds_map_of_distorted_then_resampled_images
+
+
+
+    @property
+    def out_of_bounds_map_of_distorted_then_resampled_images(self):
+        r"""`torch.Tensor`: The out-of-bounds map of distorted then resampled 
+        images.
+
+        See the summary documentation of the class
+        :class:`distoptica.DistortionModel` for additional context.
+
+        ``out_of_bounds_map_of_distorted_then_resampled_images`` is a PyTorch
+        tensor having a shape equal to
+        :math:`\left(N_{\mathring{\mathcal{I}};y},
+        N_{\mathring{\mathcal{I}};x}\right)`, where
+        :math:`N_{\mathring{\mathcal{I}};x}` and
+        :math:`N_{\mathring{\mathcal{I}};y}` being the number of pixels in the
+        sampling grid from left to right and top to bottom respectively.
+
+        Let ``sampling_grid`` and
+        ``flow_field_of_coord_transform_right_inverse`` denote the attributes
+        :attr:`distoptica.DistortionModel.sampling_grid` and
+        :attr:`distoptica.DistortionModel.flow_field_of_coord_transform_right_inverse`
+        respectively. Furthermore, let ``u_x =
+        sampling_grid[0]+flow_field_of_coord_transform_right_inverse[0]`` and
+        ``u_y =
+        sampling_grid[1]+flow_field_of_coord_transform_right_inverse[1]``.
+
+        ``out_of_bounds_map_of_distorted_then_resampled_images`` is equal to
+        ``(u_x*u_x.shape[1]<=0.5) | (u_x.shape[1]-0.5<=u_x*u_x.shape[1]) |
+        (u_y*u_y.shape[0]<=0.5) | (u_y.shape[0]-0.5<=u_y*u_y.shape[0])``.
+
+        Note that ``out_of_bounds_map_of_coord_transform`` should be considered
+        **read-only**.
+
+        """
+        method_alias = \
+            self.get_out_of_bounds_map_of_distorted_then_resampled_images
         result = \
             method_alias(deep_copy=True)
 

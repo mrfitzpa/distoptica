@@ -1002,7 +1002,9 @@ def test_5_of_DistortionModel():
                   "convergence_map_of_distorted_then_resampled_images",
                   "mask_frame_of_distorted_then_resampled_images",
                   "flow_field_of_coord_transform", 
-                  "flow_field_of_coord_transform_right_inverse")
+                  "flow_field_of_coord_transform_right_inverse",
+                  "out_of_bounds_map_of_distorted_then_resampled_images",
+                  "out_of_bounds_map_of_undistorted_then_resampled_images")
     for attr_name in attr_names:
         kwargs = distortion_model_ctor_params
         distortion_model = distoptica.DistortionModel(**kwargs)
@@ -1098,7 +1100,9 @@ def test_7_of_DistortionModel():
     attr_names = ("sampling_grid", 
                   "convergence_map_of_distorted_then_resampled_images",
                   "flow_field_of_coord_transform", 
-                  "flow_field_of_coord_transform_right_inverse")
+                  "flow_field_of_coord_transform_right_inverse",
+                  "out_of_bounds_map_of_distorted_then_resampled_images",
+                  "out_of_bounds_map_of_undistorted_then_resampled_images")
     for attr_name in attr_names:
         kwargs = distortion_model_ctor_params
         distortion_model = distoptica.DistortionModel(**kwargs)
