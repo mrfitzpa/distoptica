@@ -1582,25 +1582,28 @@ class LeastSquaresAlgParams(_cls_alias):
     23. If :math:`\delta_{\nu+1;w_{1},w_{2}}<\epsilon_{\chi}`, for all
     :math:`w_{1}` and :math:`w_{2}` in which
     :math:`\mathbf{p}_{\nu+1;w_{1},w_{2}}\in[0,1]\times\left[0,1\right]`, then
-    go to step 28. Otherwise, go to step 25.
+    go to step 29. Otherwise, go to step 25.
 
     24. If :math:`\delta_{\nu+1;w_{1},w_{2}}<\epsilon_{\chi}`, for all
-    :math:`w_{1}` and :math:`w_{2}`, then go to step 28. Otherwise, go to step
+    :math:`w_{1}` and :math:`w_{2}`, then go to step 29. Otherwise, go to step
     25.
 
-    25. If :math:`\nu=N_{\nu}-1`, then go to step 31. Otherwise, go to step 26.
+    25. If :math:`\nu=N_{\nu}-1`, then go to step 32. Otherwise, go to step 26.
 
-    26. :math:`\nu\leftarrow \nu+1`.
+    26. :math:`\Delta_{\text{best}}\leftarrow
+    \max\left(\Delta_{\nu+1},\Delta_{\text{best}}\right)`.
 
-    27. Go to step 8.
+    27. :math:`\nu\leftarrow \nu+1`.
 
-    28. :math:`u_{x;w_{1},w_{2}}\leftarrow p_{\nu+1;w_{1},w_{2};0}`.
+    28. Go to step 8.
 
-    29. :math:`u_{y;w_{1},w_{2}}\leftarrow p_{\nu+1;w_{1},w_{2};1}`.
+    29. :math:`u_{x;w_{1},w_{2}}\leftarrow p_{\nu+1;w_{1},w_{2};0}`.
 
-    30. Stop algorithm without raising an exception.
+    30. :math:`u_{y;w_{1},w_{2}}\leftarrow p_{\nu+1;w_{1},w_{2};1}`.
 
-    31. Stop algorithm with an exception raised.
+    31. Stop algorithm without raising an exception.
+
+    32. Stop algorithm with an exception raised.
 
     Parameters
     ----------
