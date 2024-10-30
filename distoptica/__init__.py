@@ -769,7 +769,7 @@ class CoordTransformParams(_cls_alias):
         :label: u_r__1
 
     .. math ::
-        u_{\theta} =\tan^{-1}\left(\frac{y-y_{c;D}}{x-x_{c;D}}\right),
+        u_{\theta} =\tan^{-1}\left(\frac{u_y-y_{c;D}}{u_x-x_{c;D}}\right),
         :label: u_theta__1
 
     .. math ::
