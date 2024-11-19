@@ -56,11 +56,11 @@ where ``<selector>`` can be one of the following:
 * ``docs``: to install the dependencies necessary for documentation generation;
 * ``all``: to install all of the above optional dependencies.
 
-Installing distoptica using conda (Linux or OSX only)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing distoptica using conda
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Note that the following installation instructions work only for Unix-based
-systems, i.e. Linux or OSX platforms, not Windows.
+For Windows systems, users must install ``PyTorch`` separately prior to
+following the remaining instructions below.
 
 To install ``distoptica`` using the ``conda`` package manager, run the following
 command::
