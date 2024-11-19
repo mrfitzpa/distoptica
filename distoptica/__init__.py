@@ -472,7 +472,7 @@ def _update_coord_transform_input_subset_2(coord_transform_inputs,
 
     bool_mat_1 = (powers_of_u_r[1] == 0)
     bool_mat_2 = ~bool_mat_1
-    divisor = powers_of_u_r[2] + bool_mat_1
+    divisor = powers_of_u_r[1]*powers_of_u_r[1] + bool_mat_1
     delta_u_x = coord_transform_inputs["delta_u_x"]
     delta_u_y = coord_transform_inputs["delta_u_y"]
     derivative_of_u_theta_wrt_u_x = (-delta_u_y/divisor) * bool_mat_2
