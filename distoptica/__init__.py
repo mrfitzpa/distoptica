@@ -64,6 +64,27 @@ __all__ = ["CoordTransformParams",
 
 
 
+def _deep_copy(obj, memo, names_of_attrs_requiring_special_care):
+    cls_alias = obj.__class__
+    deep_copy_of_obj = cls_alias.__new__(cls_alias)
+    memo[id(obj)] = deep_copy_of_obj
+
+    for attr_name, attr_val in obj.__dict__.items():
+        if ((attr_name in names_of_attrs_requiring_special_care)
+            and (attr_val is not None)):
+            modified_attr_val = ((attr_val[0].detach(), attr_val[1].detach())
+                                 if isinstance(attr_val, tuple)
+                                 else attr_val.detach())                    
+            deep_copy_of_attr_val = copy.deepcopy(modified_attr_val, memo)
+        else:
+            deep_copy_of_attr_val = copy.deepcopy(attr_val, memo)
+                
+        setattr(deep_copy_of_obj, attr_name, deep_copy_of_attr_val)
+
+    return deep_copy_of_obj
+
+
+
 class _Polynomials(torch.nn.Module):
     def __init__(self, coefficient_matrix):
         super().__init__()
@@ -105,6 +126,17 @@ class _Polynomials(torch.nn.Module):
                                      derivative_of_powers_of_u_r_wrt_u_r[0:M])
 
         return output_tensor
+
+
+
+    def __deepcopy__(self, memo):
+        names_of_attrs_requiring_special_care = \
+            ("forward_output",
+             "derivative_wrt_u_r")
+        deep_copy_of_self = \
+            _deep_copy(self, memo, names_of_attrs_requiring_special_care)
+        
+        return deep_copy_of_self
 
 
 
@@ -195,6 +227,18 @@ class _FourierSeries(torch.nn.Module):
         output_tensor = intermediate_tensor_1+intermediate_tensor_2
 
         return output_tensor
+
+
+
+    def __deepcopy__(self, memo):
+        names_of_attrs_requiring_special_care = \
+            ("forward_output",
+             "derivative_wrt_u_r",
+             "derivative_wrt_u_theta")
+        deep_copy_of_self = \
+            _deep_copy(self, memo, names_of_attrs_requiring_special_care)
+        
+        return deep_copy_of_self
 
 
 
@@ -4217,6 +4261,21 @@ class DistortionModel(_cls_alias):
         result = copy.deepcopy(self._device)
 
         return result
+
+
+
+    def __deepcopy__(self, memo):
+        names_of_attrs_requiring_special_care = \
+            ("_flow_field_of_coord_transform",
+             "_renormalized_flow_field_of_coord_transform",
+             "_flow_field_of_coord_transform_right_inverse",
+             "_renormalized_flow_field_of_coord_transform_right_inverse",
+             "_jacobian_weights_for_distorting_then_resampling",
+             "_jacobian_weights_for_undistorting_then_resampling")
+        deep_copy_of_self = \
+            _deep_copy(self, memo, names_of_attrs_requiring_special_care)
+        
+        return deep_copy_of_self
 
 
 
