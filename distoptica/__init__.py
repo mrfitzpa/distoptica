@@ -2467,7 +2467,12 @@ class _CoordTransformRightInverse(torch.nn.Module):
 
 
 def _calc_minimum_frame_to_mask_all_zero_valued_elems(mat):
-    if mat.sum().item() != mat.numel():
+    if mat.sum().item() == 0:
+        minimum_frame_to_mask_all_zero_valued_elems = (mat.shape[1],
+                                                       0,
+                                                       0,
+                                                       mat.shape[0])
+    elif mat.sum().item() != mat.numel():
         area_of_largest_rectangle_in_mat = 0
         minimum_frame_to_mask_all_zero_valued_elems = np.zeros((4,), dtype=int)
         num_rows = mat.shape[0]

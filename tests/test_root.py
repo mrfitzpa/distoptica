@@ -415,6 +415,38 @@ def generate_standard_coord_transform_params_4_ctor_params():
 
 
 
+def generate_standard_coord_transform_params_5_ctor_params():
+    center = (100, 0.5)
+    
+    quadratic_radial_distortion_amplitude = -0.5
+
+    elliptical_distortion_vector = (0, 0)
+
+    spiral_distortion_amplitude = 0
+
+    amplitude = 0
+    phase = 0
+    parabolic_distortion_vector = (amplitude*np.cos(phase), 
+                                   amplitude*np.sin(phase))
+    
+    standard_coord_transform_params_ctor_params = \
+        {"center": \
+         center,
+         "quadratic_radial_distortion_amplitude": \
+         quadratic_radial_distortion_amplitude,
+         "elliptical_distortion_vector": \
+         elliptical_distortion_vector,
+         "spiral_distortion_amplitude": \
+         spiral_distortion_amplitude,
+         "parabolic_distortion_vector": \
+         parabolic_distortion_vector, 
+         "skip_validation_and_conversion": \
+         False}
+
+    return standard_coord_transform_params_ctor_params
+
+
+
 def generate_center(instance_idx):
     if instance_idx <= 3:
         func_name = ("generate_standard_coord_transform_params_{}_"
@@ -1223,6 +1255,35 @@ def test_3_of_generate_standard_distortion_model():
     del kwargs["skip_validation_and_conversion"]
     kwargs["standard_coord_transform_params"] = standard_coord_transform_params
     distortion_model = distoptica.generate_standard_distortion_model(**kwargs)
+
+    return None
+
+
+
+def test_4_of_generate_standard_distortion_model():
+    kwargs = \
+        generate_standard_coord_transform_params_5_ctor_params()
+    standard_coord_transform_params = \
+        distoptica.StandardCoordTransformParams(**kwargs)
+    
+    distortion_model_ctor_params = \
+        generate_distortion_model_ctor_params(instance_idx=4)
+
+    kwargs = distortion_model_ctor_params.copy()
+    del kwargs["coord_transform_params"]
+    del kwargs["skip_validation_and_conversion"]
+    kwargs["standard_coord_transform_params"] = standard_coord_transform_params
+    distortion_model = distoptica.generate_standard_distortion_model(**kwargs)
+
+    L, R, B, T = \
+        distortion_model.mask_frame_of_distorted_then_resampled_images
+    sampling_grid_dims_in_pixels = \
+        distortion_model.core_attrs["sampling_grid_dims_in_pixels"]
+
+    assert (L == sampling_grid_dims_in_pixels[0])
+    assert (R == 0)
+    assert (B == 0)
+    assert (T == sampling_grid_dims_in_pixels[1])
 
     return None
 
