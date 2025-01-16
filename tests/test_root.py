@@ -27,6 +27,9 @@ import pytest
 # For accessing attributes of functions.
 import inspect
 
+# For performing deep copies.
+import copy
+
 
 
 # For general array handling.
@@ -833,6 +836,8 @@ def test_1_of_DistortionModel():
 
     distortion_model = cls_alias()
 
+    distortion_model = copy.deepcopy(distortion_model)
+
     assert distortion_model.is_azimuthally_symmetric
     assert distortion_model.is_trivial
 
@@ -879,9 +884,12 @@ def test_2_of_DistortionModel():
     for multi_dim_slice_1, multi_dim_slice_2 in zip_obj:
         undistorted_images = generate_undistorted_images()[multi_dim_slice_1]
 
-        method_alias = distortion_model.distort_then_resample_images
-        kwargs = {"undistorted_images": undistorted_images}
-        distorted_then_resampled_images = method_alias(**kwargs)
+        for iteration_idx in range(2):
+            if iteration_idx == 1:
+                distortion_model = copy.deepcopy(distortion_model)
+            method_alias = distortion_model.distort_then_resample_images
+            kwargs = {"undistorted_images": undistorted_images}
+            distorted_then_resampled_images = method_alias(**kwargs)
         
         distorted_then_resampled_images = \
             distorted_then_resampled_images.cpu().detach().numpy()
@@ -961,9 +969,12 @@ def test_3_of_DistortionModel():
     for multi_dim_slice_1, multi_dim_slice_2 in zip_obj:
         distorted_images = generate_distorted_images()[multi_dim_slice_1]
 
-        method_alias = distortion_model.undistort_then_resample_images
-        kwargs = {"distorted_images": distorted_images}
-        undistorted_then_resampled_images = method_alias(**kwargs)
+        for iteration_idx in range(2):
+            if iteration_idx == 1:
+                distortion_model = copy.deepcopy(distortion_model)
+            method_alias = distortion_model.undistort_then_resample_images
+            kwargs = {"distorted_images": distorted_images}
+            undistorted_then_resampled_images = method_alias(**kwargs)
         
         undistorted_then_resampled_images = \
             undistorted_then_resampled_images.cpu().detach().numpy()
