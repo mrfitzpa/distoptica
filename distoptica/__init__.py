@@ -21,12 +21,6 @@
 ## Load libraries/packages/modules ##
 #####################################
 
-# For accessing attributes of functions.
-import inspect
-
-# For randomly selecting items in dictionaries.
-import random
-
 # For performing deep copies.
 import copy
 
@@ -558,9 +552,7 @@ def _set_coord_transform_inputs_elem(coord_transform_inputs, key, elem):
 
 
 def _check_and_convert_center(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "center"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -571,7 +563,7 @@ def _check_and_convert_center(params):
 
 
 def _pre_serialize_center(center):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = center
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -586,9 +578,7 @@ def _de_pre_serialize_center(serializable_rep):
 
 
 def _check_and_convert_radial_cosine_coefficient_matrix(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "radial_cosine_coefficient_matrix"
     obj = params[obj_name]
 
     params["coefficient_matrix"] = obj
@@ -605,10 +595,11 @@ def _check_and_convert_radial_cosine_coefficient_matrix(params):
 
 
 def _check_and_convert_coefficient_matrix(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "coefficient_matrix"
     obj = params[obj_name]
+
+    current_func_name = "_check_and_convert_coefficient_matrix"
+    char_idx = 19
 
     try:
         kwargs = \
@@ -638,7 +629,7 @@ def _check_and_convert_coefficient_matrix(params):
 
 def _pre_serialize_radial_cosine_coefficient_matrix(
         radial_cosine_coefficient_matrix):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = radial_cosine_coefficient_matrix
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -653,9 +644,7 @@ def _de_pre_serialize_radial_cosine_coefficient_matrix(serializable_rep):
 
 
 def _check_and_convert_radial_sine_coefficient_matrix(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "radial_sine_coefficient_matrix"
     obj = params[obj_name]
 
     params["coefficient_matrix"] = obj
@@ -673,7 +662,7 @@ def _check_and_convert_radial_sine_coefficient_matrix(params):
 
 def _pre_serialize_radial_sine_coefficient_matrix(
         radial_sine_coefficient_matrix):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = radial_sine_coefficient_matrix
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -688,9 +677,7 @@ def _de_pre_serialize_radial_sine_coefficient_matrix(serializable_rep):
 
 
 def _check_and_convert_tangential_cosine_coefficient_matrix(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "tangential_cosine_coefficient_matrix"
     obj = params[obj_name]
 
     params["coefficient_matrix"] = obj
@@ -708,7 +695,7 @@ def _check_and_convert_tangential_cosine_coefficient_matrix(params):
 
 def _pre_serialize_tangential_cosine_coefficient_matrix(
         tangential_cosine_coefficient_matrix):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = tangential_cosine_coefficient_matrix
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -723,9 +710,7 @@ def _de_pre_serialize_tangential_cosine_coefficient_matrix(serializable_rep):
 
 
 def _check_and_convert_tangential_sine_coefficient_matrix(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "tangential_sine_coefficient_matrix"
     obj = params[obj_name]
 
     params["coefficient_matrix"] = obj
@@ -743,7 +728,7 @@ def _check_and_convert_tangential_sine_coefficient_matrix(params):
 
 def _pre_serialize_tangential_sine_coefficient_matrix(
         tangential_sine_coefficient_matrix):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = tangential_sine_coefficient_matrix
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1178,9 +1163,7 @@ class CoordTransformParams(_cls_alias):
 
 
 def _check_and_convert_coord_transform_params(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "coord_transform_params"
     obj = params[obj_name]
 
     accepted_types = (CoordTransformParams, type(None))
@@ -1199,7 +1182,7 @@ def _check_and_convert_coord_transform_params(params):
 
 
 def _pre_serialize_coord_transform_params(coord_transform_params):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = coord_transform_params
     serializable_rep = obj_to_pre_serialize.pre_serialize()
     
     return serializable_rep
@@ -1215,9 +1198,7 @@ def _de_pre_serialize_coord_transform_params(serializable_rep):
 
 
 def _check_and_convert_max_num_iterations(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "max_num_iterations"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -1228,7 +1209,7 @@ def _check_and_convert_max_num_iterations(params):
 
 
 def _pre_serialize_max_num_iterations(max_num_iterations):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = max_num_iterations
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1243,9 +1224,7 @@ def _de_pre_serialize_max_num_iterations(serializable_rep):
 
 
 def _check_and_convert_initial_damping(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "initial_damping"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -1256,7 +1235,7 @@ def _check_and_convert_initial_damping(params):
 
 
 def _pre_serialize_initial_damping(initial_damping):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = initial_damping
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1271,9 +1250,7 @@ def _de_pre_serialize_initial_damping(serializable_rep):
 
 
 def _check_and_convert_factor_for_decreasing_damping(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "factor_for_decreasing_damping"
     obj = params[obj_name]
 
     kwargs = \
@@ -1286,7 +1263,7 @@ def _check_and_convert_factor_for_decreasing_damping(params):
 
 
 def _pre_serialize_factor_for_decreasing_damping(factor_for_decreasing_damping):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = factor_for_decreasing_damping
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1301,9 +1278,7 @@ def _de_pre_serialize_factor_for_decreasing_damping(serializable_rep):
 
 
 def _check_and_convert_factor_for_increasing_damping(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "factor_for_increasing_damping"
     obj = params[obj_name]
 
     kwargs = \
@@ -1316,7 +1291,7 @@ def _check_and_convert_factor_for_increasing_damping(params):
 
 
 def _pre_serialize_factor_for_increasing_damping(factor_for_increasing_damping):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = factor_for_increasing_damping
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1331,9 +1306,7 @@ def _de_pre_serialize_factor_for_increasing_damping(serializable_rep):
 
 
 def _check_and_convert_improvement_tol(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "improvement_tol"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -1344,7 +1317,7 @@ def _check_and_convert_improvement_tol(params):
 
 
 def _pre_serialize_improvement_tol(improvement_tol):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = improvement_tol
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1359,9 +1332,7 @@ def _de_pre_serialize_improvement_tol(serializable_rep):
 
 
 def _check_and_convert_rel_err_tol(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "rel_err_tol"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -1372,7 +1343,7 @@ def _check_and_convert_rel_err_tol(params):
 
 
 def _pre_serialize_rel_err_tol(rel_err_tol):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = rel_err_tol
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1387,9 +1358,7 @@ def _de_pre_serialize_rel_err_tol(serializable_rep):
 
 
 def _check_and_convert_plateau_tol(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "plateau_tol"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -1400,7 +1369,7 @@ def _check_and_convert_plateau_tol(params):
 
 
 def _pre_serialize_plateau_tol(plateau_tol):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = plateau_tol
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1415,9 +1384,7 @@ def _de_pre_serialize_plateau_tol(serializable_rep):
 
 
 def _check_and_convert_plateau_patience(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "plateau_patience"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -1428,7 +1395,7 @@ def _check_and_convert_plateau_patience(params):
 
 
 def _pre_serialize_plateau_patience(plateau_patience):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = plateau_patience
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -1787,9 +1754,7 @@ class LeastSquaresAlgParams(_cls_alias):
 
 
 def _check_and_convert_least_squares_alg_params(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "least_squares_alg_params"
     obj = params[obj_name]
 
     accepted_types = (LeastSquaresAlgParams, type(None))
@@ -1808,7 +1773,7 @@ def _check_and_convert_least_squares_alg_params(params):
 
 
 def _pre_serialize_least_squares_alg_params(least_squares_alg_params):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = least_squares_alg_params
     serializable_rep = obj_to_pre_serialize.pre_serialize()
     
     return serializable_rep
@@ -2606,12 +2571,12 @@ def _calc_mask_frame_and_area_of_largest_rectangle_in_histogram(
 
 
 def _check_and_convert_images(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "images"
     obj = params[obj_name]
     
     name_of_alias_of_images = params["name_of_alias_of_images"]
+
+    current_func_name = "_check_and_convert_images"
 
     try:
         if not isinstance(obj, torch.Tensor):
@@ -2647,9 +2612,7 @@ _default_distorted_images = ((0.0,),)
 
 
 def _check_and_convert_sampling_grid_dims_in_pixels(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "sampling_grid_dims_in_pixels"
     obj = params[obj_name]
 
     kwargs = \
@@ -2662,7 +2625,7 @@ def _check_and_convert_sampling_grid_dims_in_pixels(params):
 
 
 def _pre_serialize_sampling_grid_dims_in_pixels(sampling_grid_dims_in_pixels):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = sampling_grid_dims_in_pixels
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -2677,11 +2640,11 @@ def _de_pre_serialize_sampling_grid_dims_in_pixels(serializable_rep):
 
 
 def _check_and_convert_device_name(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "device_name"
     obj = params[obj_name]
 
+    current_func_name = "_check_and_convert_device_name"
+    
     if obj is None:
         device_name = obj
     else:
@@ -2699,7 +2662,7 @@ def _check_and_convert_device_name(params):
 
 
 def _pre_serialize_device_name(device_name):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = device_name
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -2714,8 +2677,7 @@ def _de_pre_serialize_device_name(serializable_rep):
 
 
 def _check_and_convert_deep_copy(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "deep_copy"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     deep_copy = czekitout.convert.to_bool(**kwargs)
 
@@ -4293,9 +4255,7 @@ class DistortionModel(_cls_alias):
 
 
 def _check_and_convert_quadratic_radial_distortion_amplitude(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "quadratic_radial_distortion_amplitude"
     obj = params[obj_name]
 
     kwargs = \
@@ -4309,7 +4269,7 @@ def _check_and_convert_quadratic_radial_distortion_amplitude(params):
 
 def _pre_serialize_quadratic_radial_distortion_amplitude(
         quadratic_radial_distortion_amplitude):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = quadratic_radial_distortion_amplitude
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -4324,9 +4284,7 @@ def _de_pre_serialize_quadratic_radial_distortion_amplitude(serializable_rep):
 
 
 def _check_and_convert_elliptical_distortion_vector(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "elliptical_distortion_vector"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -4337,7 +4295,7 @@ def _check_and_convert_elliptical_distortion_vector(params):
 
 
 def _pre_serialize_elliptical_distortion_vector(elliptical_distortion_vector):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = elliptical_distortion_vector
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -4352,9 +4310,7 @@ def _de_pre_serialize_elliptical_distortion_vector(serializable_rep):
 
 
 def _check_and_convert_spiral_distortion_amplitude(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "spiral_distortion_amplitude"
     obj = params[obj_name]
 
     kwargs = \
@@ -4367,7 +4323,7 @@ def _check_and_convert_spiral_distortion_amplitude(params):
 
 
 def _pre_serialize_spiral_distortion_amplitude(spiral_distortion_amplitude):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = spiral_distortion_amplitude
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -4382,9 +4338,7 @@ def _de_pre_serialize_spiral_distortion_amplitude(serializable_rep):
 
 
 def _check_and_convert_parabolic_distortion_vector(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "parabolic_distortion_vector"
     obj = params[obj_name]
 
     kwargs = {"obj": obj, "obj_name": obj_name}
@@ -4395,7 +4349,7 @@ def _check_and_convert_parabolic_distortion_vector(params):
 
 
 def _pre_serialize_parabolic_distortion_vector(parabolic_distortion_vector):
-    obj_to_pre_serialize = random.choice(list(locals().values()))
+    obj_to_pre_serialize = parabolic_distortion_vector
     serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
@@ -4706,9 +4660,7 @@ class StandardCoordTransformParams(_cls_alias):
 
 
 def _check_and_convert_standard_coord_transform_params(params):
-    current_func_name = inspect.stack()[0][3]
-    char_idx = 19
-    obj_name = current_func_name[char_idx:]
+    obj_name = "standard_coord_transform_params"
     obj = params[obj_name]
 
     accepted_types = (StandardCoordTransformParams, type(None))
@@ -4727,8 +4679,7 @@ def _check_and_convert_standard_coord_transform_params(params):
 
 
 def _check_and_convert_skip_validation_and_conversion(params):
-    current_func_name = inspect.stack()[0][3]
-    obj_name = current_func_name[19:]
+    obj_name = "skip_validation_and_conversion"
     kwargs = {"obj": params[obj_name], "obj_name": obj_name}
     skip_validation_and_conversion = czekitout.convert.to_bool(**kwargs)
 
@@ -4811,17 +4762,16 @@ def generate_standard_distortion_model(standard_coord_transform_params=\
     skip_validation_and_conversion = func_alias(params)
 
     if (skip_validation_and_conversion == False):
+        global_symbol_table = globals()
         for param_name in params:
             if param_name == "skip_validation_and_conversion":
                 continue
             func_name = "_check_and_convert_" + param_name
-            func_alias = globals()[func_name]
+            func_alias = global_symbol_table[func_name]
             params[param_name] = func_alias(params)
 
-    func_name = "_" + inspect.stack()[0][3]
-    func_alias = globals()[func_name]
     kwargs = params
-    distortion_model = func_alias(**kwargs)
+    distortion_model = _generate_standard_distortion_model(**kwargs)
 
     return distortion_model
 
