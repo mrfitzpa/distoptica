@@ -2028,6 +2028,7 @@ class _CoordTransformRightInverse(torch.nn.Module):
                 raise
 
         except:
+            self.del_subset_of_levenberg_marquardt_alg_variables()
             unformatted_err_msg = _coord_transform_right_inverse_err_msg_1
             err_msg = unformatted_err_msg.format(max_num_iterations)
             raise RuntimeError(err_msg)
@@ -3131,6 +3132,7 @@ class DistortionModel(_cls_alias):
         self._is_standard = \
             coord_transform_params._is_corresponding_model_standard
 
+        self._sampling_grid = None
         self._sampling_grid = self._calc_sampling_grid()
 
         self._flow_field_of_coord_transform = None
