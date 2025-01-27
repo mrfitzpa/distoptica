@@ -3345,7 +3345,8 @@ class DistortionModel(_cls_alias):
 
     def _distort_then_resample_images(self, undistorted_images):
         if self._jacobian_weights_for_distorting_then_resampling is None:
-            self._update_attr_subset_1()
+            with torch.no_grad():
+                self._update_attr_subset_1()
 
         num_images = undistorted_images.shape[0]
         
@@ -3537,7 +3538,8 @@ class DistortionModel(_cls_alias):
 
     def _undistort_then_resample_images(self, distorted_images):
         if self._jacobian_weights_for_undistorting_then_resampling is None:
-            self._update_attr_subset_2()
+            with torch.no_grad():
+                self._update_attr_subset_2()
 
         num_images = distorted_images.shape[0]
 
@@ -3764,7 +3766,8 @@ class DistortionModel(_cls_alias):
 
         """
         if self._convergence_map_of_distorted_then_resampled_images is None:
-            self._update_attr_subset_1()
+            with torch.no_grad():
+                self._update_attr_subset_1()
 
         params = {"deep_copy": deep_copy}
         deep_copy = _check_and_convert_deep_copy(params)
@@ -3850,7 +3853,8 @@ class DistortionModel(_cls_alias):
 
         """
         if self._mask_frame_of_distorted_then_resampled_images is None:
-            self._update_attr_subset_1()
+            with torch.no_grad():
+                self._update_attr_subset_1()
 
         result = self._mask_frame_of_distorted_then_resampled_images
 
@@ -3880,7 +3884,8 @@ class DistortionModel(_cls_alias):
 
         """
         if self._flow_field_of_coord_transform is None:
-            self._update_attr_subset_2()
+            with torch.no_grad():
+                self._update_attr_subset_2()
 
         params = {"deep_copy": deep_copy}
         deep_copy = _check_and_convert_deep_copy(params)
@@ -3981,7 +3986,8 @@ class DistortionModel(_cls_alias):
 
         """
         if self._flow_field_of_coord_transform_right_inverse is None:
-            self._update_attr_subset_1()
+            with torch.no_grad():
+                self._update_attr_subset_1()
 
         params = {"deep_copy": deep_copy}
         deep_copy = _check_and_convert_deep_copy(params)
@@ -4083,7 +4089,8 @@ class DistortionModel(_cls_alias):
 
         """
         if self._out_of_bounds_map_of_undistorted_then_resampled_images is None:
-            self._update_attr_subset_2()
+            with torch.no_grad():
+                self._update_attr_subset_2()
 
         params = {"deep_copy": deep_copy}
         deep_copy = _check_and_convert_deep_copy(params)
@@ -4166,7 +4173,8 @@ class DistortionModel(_cls_alias):
 
         """
         if self._out_of_bounds_map_of_distorted_then_resampled_images is None:
-            self._update_attr_subset_1()
+            with torch.no_grad():
+                self._update_attr_subset_1()
 
         params = {"deep_copy": deep_copy}
         deep_copy = _check_and_convert_deep_copy(params)
