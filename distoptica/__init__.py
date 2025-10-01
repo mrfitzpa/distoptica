@@ -51,10 +51,13 @@ from distoptica.version import __version__
 
 # List of public objects in package.
 __all__ = ["CoordTransformParams",
+           "StandardCoordTransformParams",
+           "from_standard_to_generic_coord_transform_params",
            "LeastSquaresAlgParams",
            "DistortionModel",
-           "StandardCoordTransformParams",
-           "generate_standard_distortion_model"]
+           "generate_standard_distortion_model",
+           "apply_coord_transform",
+           "apply_coord_transform_right_inverse"]
 
 
 
@@ -756,11 +759,11 @@ class CoordTransformParams(_cls_alias):
     r"""The parameters of a generic trigonometric series defining a coordinate 
     transformation.
 
-    Users are encouraged to read the summary documentation of the class
+    Users are encouraged to read the summary documentation for the class
     :class:`distoptica.DistortionModel` before reading the documentation for the
     current class as it provides essential context to what is discussed below.
 
-    As discussed in the summary documentation of the class
+    As discussed in the summary documentation for the class
     :class:`distoptica.DistortionModel`, optical distortions introduced in an
     imaging experiment can be described by a coordinate transformation,
     comprising of two components: :math:`T_{⌑;x}\left(u_{x},u_{y}\right)` and
@@ -1162,38 +1165,658 @@ class CoordTransformParams(_cls_alias):
 
 
 
-def _check_and_convert_coord_transform_params(params):
-    obj_name = "coord_transform_params"
+def _check_and_convert_quadratic_radial_distortion_amplitude(params):
+    obj_name = "quadratic_radial_distortion_amplitude"
     obj = params[obj_name]
 
-    accepted_types = (CoordTransformParams, type(None))
+    kwargs = \
+        {"obj": obj, "obj_name": obj_name}
+    quadratic_radial_distortion_amplitude = \
+        czekitout.convert.to_float(**kwargs)
 
-    if isinstance(obj, accepted_types[1]):
-        coord_transform_params = accepted_types[0]()
-    else:
-        kwargs = {"obj": obj,
-                  "obj_name": obj_name,
-                  "accepted_types": accepted_types}
-        czekitout.check.if_instance_of_any_accepted_types(**kwargs)
-        coord_transform_params = copy.deepcopy(obj)
-
-    return coord_transform_params
+    return quadratic_radial_distortion_amplitude
 
 
 
-def _pre_serialize_coord_transform_params(coord_transform_params):
-    obj_to_pre_serialize = coord_transform_params
-    serializable_rep = obj_to_pre_serialize.pre_serialize()
+def _pre_serialize_quadratic_radial_distortion_amplitude(
+        quadratic_radial_distortion_amplitude):
+    obj_to_pre_serialize = quadratic_radial_distortion_amplitude
+    serializable_rep = obj_to_pre_serialize
     
     return serializable_rep
 
 
 
-def _de_pre_serialize_coord_transform_params(serializable_rep):
-    coord_transform_params = \
-        CoordTransformParams.de_pre_serialize(serializable_rep)
+def _de_pre_serialize_quadratic_radial_distortion_amplitude(serializable_rep):
+    quadratic_radial_distortion_amplitude = serializable_rep
 
-    return coord_transform_params
+    return quadratic_radial_distortion_amplitude
+
+
+
+def _check_and_convert_elliptical_distortion_vector(params):
+    obj_name = "elliptical_distortion_vector"
+    obj = params[obj_name]
+
+    kwargs = {"obj": obj, "obj_name": obj_name}
+    elliptical_distortion_vector = czekitout.convert.to_pair_of_floats(**kwargs)
+
+    return elliptical_distortion_vector
+
+
+
+def _pre_serialize_elliptical_distortion_vector(elliptical_distortion_vector):
+    obj_to_pre_serialize = elliptical_distortion_vector
+    serializable_rep = obj_to_pre_serialize
+    
+    return serializable_rep
+
+
+
+def _de_pre_serialize_elliptical_distortion_vector(serializable_rep):
+    elliptical_distortion_vector = serializable_rep
+
+    return elliptical_distortion_vector
+
+
+
+def _check_and_convert_spiral_distortion_amplitude(params):
+    obj_name = "spiral_distortion_amplitude"
+    obj = params[obj_name]
+
+    kwargs = \
+        {"obj": obj, "obj_name": obj_name}
+    spiral_distortion_amplitude = \
+        czekitout.convert.to_float(**kwargs)
+
+    return spiral_distortion_amplitude
+
+
+
+def _pre_serialize_spiral_distortion_amplitude(spiral_distortion_amplitude):
+    obj_to_pre_serialize = spiral_distortion_amplitude
+    serializable_rep = obj_to_pre_serialize
+    
+    return serializable_rep
+
+
+
+def _de_pre_serialize_spiral_distortion_amplitude(serializable_rep):
+    spiral_distortion_amplitude = serializable_rep
+
+    return spiral_distortion_amplitude
+
+
+
+def _check_and_convert_parabolic_distortion_vector(params):
+    obj_name = "parabolic_distortion_vector"
+    obj = params[obj_name]
+
+    kwargs = {"obj": obj, "obj_name": obj_name}
+    parabolic_distortion_vector = czekitout.convert.to_pair_of_floats(**kwargs)
+
+    return parabolic_distortion_vector
+
+
+
+def _pre_serialize_parabolic_distortion_vector(parabolic_distortion_vector):
+    obj_to_pre_serialize = parabolic_distortion_vector
+    serializable_rep = obj_to_pre_serialize
+    
+    return serializable_rep
+
+
+
+def _de_pre_serialize_parabolic_distortion_vector(serializable_rep):
+    parabolic_distortion_vector = serializable_rep
+
+    return parabolic_distortion_vector
+
+
+
+_default_quadratic_radial_distortion_amplitude = 0
+_default_elliptical_distortion_vector = (0, 0)
+_default_spiral_distortion_amplitude = 0
+_default_parabolic_distortion_vector = (0, 0)
+
+
+
+_cls_alias = fancytypes.PreSerializableAndUpdatable
+class StandardCoordTransformParams(_cls_alias):
+    r"""The parameters of a standard trigonometric series defining a coordinate 
+    transformation.
+
+    Users are encouraged to read the summary documentation for the classes
+    :class:`distoptica.DistortionModel` and
+    :class:`distoptica.CoordTransformParams` before reading the documentation
+    for the current class as it provides essential context to what is discussed
+    below.
+
+    Motivated by transmission electron microscopy experiments, we define a class
+    of standard coordinate transformations, where each standard coordinate
+    transformation comprises of two components:
+    :math:`T_{⌑;x}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)` and
+    :math:`T_{⌑;y}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)`.
+    :math:`T_{⌑;x}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)` and
+    :math:`T_{⌑;y}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)` have the
+    mathematical forms of Eqs. :eq:`T_distsq_x__1` and :eq:`T_distsq_y__1`
+    respectively, only that the radial cosine coefficient matrix
+    :math:`A_{r;v_{1},v_{2}}` has the following form:
+
+    .. math ::
+        A_{r;v_{1},v_{2}}=\begin{pmatrix}0 & 0 & A_{r;0,2}\\
+        0 & A_{r;1,1} & 0\\
+        A_{r;2,0} & 0 & 0
+        \end{pmatrix},
+        :label: std_radial_cosine_coefficient_matrix__1
+
+    the radial sine coefficient matrix :math:`B_{r;v_{1},v_{2}}` has the
+    following form:
+
+    .. math ::
+        B_{r;v_{1},v_{2}}=\begin{pmatrix}0 & B_{r;0,1}\\
+        B_{r;1,0} & 0
+        \end{pmatrix},
+        :label: std_radial_sine_coefficient_matrix__1
+
+    the tangential cosine coefficient matrix :math:`A_{t;v_{1},v_{2}}` has the
+    following form:
+
+    .. math ::
+        A_{t;v_{1},v_{2}}=\begin{pmatrix}0 & 0 & A_{t;0,2}\\
+        0 & A_{t;1,1} & 0\\
+        A_{t;2,0} & 0 & 0
+        \end{pmatrix},
+        :label: std_tangential_cosine_coefficient_matrix__1
+
+    with
+
+    .. math ::
+        A_{t;2,0}=B_{r;1,0},
+        :label: A_t_2_0__1
+
+    .. math ::
+        A_{t;1,1}=\frac{1}{3}B_{r;0,1},
+        :label: A_r_1_1__1
+
+    and the tangential sine coefficient matrix :math:`B_{t;v_{1},v_{2}}` has the
+    following form:
+
+    .. math ::
+        B_{t;v_{1},v_{2}}=\begin{pmatrix}0 & B_{t;0,1}\\
+        B_{t;1,0} & 0
+        \end{pmatrix},
+        :label: std_tangential_sine_coefficient_matrix__1
+
+    with
+
+    .. math ::
+        B_{t;0,1}=-\frac{1}{3}A_{r;1,1},
+        :label: B_t_0_1__1
+    
+    .. math ::
+        B_{t;1,0}=-A_{r;2,0}.
+        :label: B_t_1_0__1
+
+    Parameters
+    ----------
+    center : `array_like` (`float`, shape=(2,)), optional
+        The distortion center :math:`\left(x_{c;D},y_{c;D}\right)`, introduced
+        in the summary documentation for the class
+        :class:`distoptica.CoordTransformParams`, where ``center[0]`` and
+        ``center[1]`` are :math:`x_{c;D}` and :math:`y_{c;D}` respectively.
+    quadratic_radial_distortion_amplitude : `float`, optional
+        The coefficient :math:`A_{r;0,2}`, which we refer to as the quadratic
+        radial distortion amplitude.
+    elliptical_distortion_vector : `array_like` (`float`, shape=(2,)), optional
+        The coefficient pair :math:`\left(A_{r;2,0},B_{r;1,0}\right)`, which we
+        refer to as the elliptical distortion vector, where
+        ``elliptical_distortion_vector[0]`` and
+        ``elliptical_distortion_vector[1]`` are :math:`A_{r;2,0}` and
+        :math:`B_{r;1,0}` respectively.
+    spiral_distortion_amplitude : `float`, optional
+        The coefficient :math:`A_{t;0,2}`, which we refer to as the spiral
+        distortion amplitude.
+    parabolic_distortion_vector : `array_like` (`float`, shape=(2,)), optional
+        The coefficient pair :math:`\left(A_{r;1,1},B_{r;0,1}\right)`, which we
+        refer to as the parabolic distortion vector, where
+        ``parabolic_distortion_vector[0]`` and
+        ``parabolic_distortion_vector[1]`` are :math:`A_{r;1,1}` and
+        :math:`B_{r;0,1}` respectively.
+    skip_validation_and_conversion : `bool`, optional
+        Let ``validation_and_conversion_funcs`` and ``core_attrs`` denote the
+        attributes :attr:`~fancytypes.Checkable.validation_and_conversion_funcs`
+        and :attr:`~fancytypes.Checkable.core_attrs` respectively, both of which
+        being `dict` objects.
+
+        Let ``params_to_be_mapped_to_core_attrs`` denote the `dict`
+        representation of the constructor parameters excluding the parameter
+        ``skip_validation_and_conversion``, where each `dict` key ``key`` is a
+        different constructor parameter name, excluding the name
+        ``"skip_validation_and_conversion"``, and
+        ``params_to_be_mapped_to_core_attrs[key]`` would yield the value of the
+        constructor parameter with the name given by ``key``.
+
+        If ``skip_validation_and_conversion`` is set to ``False``, then for each
+        key ``key`` in ``params_to_be_mapped_to_core_attrs``,
+        ``core_attrs[key]`` is set to ``validation_and_conversion_funcs[key]
+        (params_to_be_mapped_to_core_attrs)``.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        then ``core_attrs`` is set to
+        ``params_to_be_mapped_to_core_attrs.copy()``. This option is desired
+        primarily when the user wants to avoid potentially expensive deep copies
+        and/or conversions of the `dict` values of
+        ``params_to_be_mapped_to_core_attrs``, as it is guaranteed that no
+        copies or conversions are made in this case.
+
+    """
+    ctor_param_names = ("center",
+                        "quadratic_radial_distortion_amplitude",
+                        "elliptical_distortion_vector",
+                        "spiral_distortion_amplitude",
+                        "parabolic_distortion_vector")
+    kwargs = {"namespace_as_dict": globals(),
+              "ctor_param_names": ctor_param_names}
+    
+    _validation_and_conversion_funcs_ = \
+        fancytypes.return_validation_and_conversion_funcs(**kwargs)
+    _pre_serialization_funcs_ = \
+        fancytypes.return_pre_serialization_funcs(**kwargs)
+    _de_pre_serialization_funcs_ = \
+        fancytypes.return_de_pre_serialization_funcs(**kwargs)
+
+    del ctor_param_names, kwargs
+
+    
+
+    def __init__(self,
+                 center=\
+                 _default_center,
+                 quadratic_radial_distortion_amplitude=\
+                 _default_quadratic_radial_distortion_amplitude,
+                 elliptical_distortion_vector=\
+                 _default_elliptical_distortion_vector,
+                 spiral_distortion_amplitude=\
+                 _default_spiral_distortion_amplitude,
+                 parabolic_distortion_vector=\
+                 _default_parabolic_distortion_vector,
+                 skip_validation_and_conversion=\
+                 _default_skip_validation_and_conversion):
+        ctor_params = {key: val
+                       for key, val in locals().items()
+                       if (key not in ("self", "__class__"))}
+        kwargs = ctor_params
+        kwargs["skip_cls_tests"] = True
+        fancytypes.PreSerializableAndUpdatable.__init__(self, **kwargs)
+
+        self.execute_post_core_attrs_update_actions()
+
+        return None
+
+
+
+    @classmethod
+    def get_validation_and_conversion_funcs(cls):
+        validation_and_conversion_funcs = \
+            cls._validation_and_conversion_funcs_.copy()
+
+        return validation_and_conversion_funcs
+
+
+    
+    @classmethod
+    def get_pre_serialization_funcs(cls):
+        pre_serialization_funcs = \
+            cls._pre_serialization_funcs_.copy()
+
+        return pre_serialization_funcs
+
+
+    
+    @classmethod
+    def get_de_pre_serialization_funcs(cls):
+        de_pre_serialization_funcs = \
+            cls._de_pre_serialization_funcs_.copy()
+
+        return de_pre_serialization_funcs
+
+
+
+    def execute_post_core_attrs_update_actions(self):
+        r"""Execute the sequence of actions that follows immediately after 
+        updating the core attributes.
+
+        """
+        self_core_attrs = self.get_core_attrs(deep_copy=False)
+
+        quadratic_radial_distortion_amplitude = \
+            self_core_attrs["quadratic_radial_distortion_amplitude"]
+        elliptical_distortion_vector = \
+            self_core_attrs["elliptical_distortion_vector"]
+        spiral_distortion_amplitude = \
+            self_core_attrs["spiral_distortion_amplitude"]
+        parabolic_distortion_vector = \
+            self_core_attrs["parabolic_distortion_vector"]
+
+        if ((np.linalg.norm(elliptical_distortion_vector) == 0)
+            and (np.linalg.norm(parabolic_distortion_vector) == 0)
+            and np.abs(spiral_distortion_amplitude) == 0):
+            self._is_corresponding_model_azimuthally_symmetric = True
+            if np.abs(quadratic_radial_distortion_amplitude) == 0:
+                self._is_corresponding_model_trivial = True
+            else:
+                self._is_corresponding_model_trivial = False
+        else:
+            self._is_corresponding_model_azimuthally_symmetric = False
+            self._is_corresponding_model_trivial = False
+
+        return None
+
+
+
+    def update(self,
+               new_core_attr_subset_candidate,
+               skip_validation_and_conversion=\
+               _default_skip_validation_and_conversion):
+        super().update(new_core_attr_subset_candidate,
+                       skip_validation_and_conversion)
+        self.execute_post_core_attrs_update_actions()
+
+        return None
+
+
+
+    @property
+    def is_corresponding_model_azimuthally_symmetric(self):
+        r"""`bool`: A boolean variable indicating whether the corresponding 
+        distortion model is azimuthally symmetric.
+
+        If ``is_corresponding_model_azimuthally_symmetric`` is set to ``True``,
+        then the distortion model corresponding to the coordinate transformation
+        parameters is azimuthally symmetric. Otherwise, the distortion model is
+        not azimuthally symmetric.
+
+        Note that ``is_corresponding_model_azimuthally_symmetric`` should be
+        considered **read-only**.
+
+        """
+        result = self._is_corresponding_model_azimuthally_symmetric
+        
+        return result
+
+
+
+    @property
+    def is_corresponding_model_trivial(self):
+        r"""`bool`: A boolean variable indicating whether the corresponding 
+        distortion model is trivial.
+
+        We define a trivial distortion model to be one with a corresponding
+        coordinate transformation that is equivalent to the identity
+        transformation.
+
+        If ``is_corresponding_model_trivial`` is set to ``True``, then the
+        distortion model corresponding to the coordinate transformation
+        parameters is trivial. Otherwise, the distortion model is not trivial.
+
+        Note that ``is_corresponding_model_trivial`` should be considered
+        **read-only**.
+
+        """
+        result = self._is_corresponding_model_trivial
+    
+        return result
+
+
+
+def _check_and_convert_standard_coord_transform_params(params):
+    obj_name = "standard_coord_transform_params"
+    obj = params[obj_name]
+
+    accepted_types = (StandardCoordTransformParams, type(None))
+
+    if isinstance(obj, accepted_types[1]):
+        standard_coord_transform_params = accepted_types[0]()
+    else:
+        kwargs = {"obj": obj,
+                  "obj_name": obj_name,
+                  "accepted_types": accepted_types}
+        czekitout.check.if_instance_of_any_accepted_types(**kwargs)
+        standard_coord_transform_params = copy.deepcopy(obj)
+
+    return standard_coord_transform_params
+
+
+
+def _check_and_convert_skip_validation_and_conversion(params):
+    obj_name = "skip_validation_and_conversion"
+    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
+    skip_validation_and_conversion = czekitout.convert.to_bool(**kwargs)
+
+    return skip_validation_and_conversion
+
+
+
+_default_standard_coord_transform_params = None
+
+
+
+def from_standard_to_generic_coord_transform_params(
+        standard_coord_transform_params=\
+        _default_standard_coord_transform_params,
+        skip_validation_and_conversion=\
+        _default_skip_validation_and_conversion):
+    r"""Reparameterize a set of standard coordinate transformation parameters to
+    to a set of generic coordinate transformation parameters.
+
+    The current Python function returns an instance of the class
+    :class:`distoptica.CoordTransformParams`, which store the parameters of a
+    generic coordinate transformation that is mathematically equivalent to a
+    standard coordinate transformation specified by the object
+    ``standard_coord_transform_params``. See the documentation for the classes
+    :class:`distoptica.CoordTransformParams` and
+    :class:`distoptica.StandardCoordTransformParams` for discussions on the
+    parameterization of coordinate transformations.
+
+    Parameters
+    ----------
+    standard_coord_transform_params : :class:`distoptica.StandardCoordTransformParams` | `None`, optional
+        If ``standard_coord_transform_params`` is set to ``None``, then the
+        standard coordinate transformation
+        :math:`\left(T_{⌑;x}\left(u_{x},u_{y}\right),
+        T_{⌑;y}\left(u_{x},u_{y}\right)\right)` is the identity
+        transformation. Otherwise, ``standard_coord_transform_params`` specifies
+        the parameters of the standard coordinate transformation.
+    skip_validation_and_conversion : `bool`, optional
+        If ``skip_validation_and_conversion`` is set to ``False``, then
+        validations and conversions are performed on the above parameters.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        no validations and conversions are performed on the above
+        parameters. This option is desired primarily when the user wants to
+        avoid potentially expensive validation and/or conversion operations.
+
+    Returns
+    -------
+    generic_coord_transform_params : :class:`distoptica.CoordTransformParams`
+        The parameters that specify the generic coordinate transformation that 
+        is mathematically equivalent to the standard coordinate transformation.
+
+    """
+    params = locals()
+
+    func_alias = _check_and_convert_skip_validation_and_conversion
+    skip_validation_and_conversion = func_alias(params)
+
+    if (skip_validation_and_conversion == False):
+        global_symbol_table = globals()
+        
+        for param_name in params:
+            if param_name in ("skip_validation_and_conversion",):
+                continue
+            func_name = "_check_and_convert_" + param_name
+            func_alias = global_symbol_table[func_name]
+            params[param_name] = func_alias(params)
+        
+    del params["skip_validation_and_conversion"]
+
+    kwargs = \
+        params
+    generic_coord_transform_params = \
+        _from_standard_to_generic_coord_transform_params(**kwargs)
+
+    return generic_coord_transform_params
+
+
+
+def _from_standard_to_generic_coord_transform_params(
+        standard_coord_transform_params):
+    standard_coord_transform_params_core_attrs = \
+        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+    center = \
+        standard_coord_transform_params_core_attrs["center"]
+
+    kwargs = \
+        {"standard_coord_transform_params": standard_coord_transform_params}
+    radial_cosine_coefficient_matrix = \
+        _generate_standard_radial_cosine_coefficient_matrix(**kwargs)
+    radial_sine_coefficient_matrix = \
+        _generate_standard_radial_sine_coefficient_matrix(**kwargs)
+    tangential_cosine_coefficient_matrix = \
+        _generate_standard_tangential_cosine_coefficient_matrix(**kwargs)
+    tangential_sine_coefficient_matrix = \
+        _generate_standard_tangential_sine_coefficient_matrix(**kwargs)
+
+    kwargs = {"center": \
+              center,
+              "radial_cosine_coefficient_matrix": \
+              radial_cosine_coefficient_matrix,
+              "radial_sine_coefficient_matrix": \
+              radial_sine_coefficient_matrix,
+              "tangential_cosine_coefficient_matrix": \
+              tangential_cosine_coefficient_matrix,
+              "tangential_sine_coefficient_matrix": \
+              tangential_sine_coefficient_matrix,
+              "skip_validation_and_conversion": \
+              False}
+    generic_coord_transform_params = CoordTransformParams(**kwargs)
+
+    return generic_coord_transform_params
+
+
+
+def _generate_standard_radial_cosine_coefficient_matrix(
+        standard_coord_transform_params):
+    standard_coord_transform_params_core_attrs = \
+        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+
+    attr_name = \
+        "quadratic_radial_distortion_amplitude"
+    quadratic_radial_distortion_amplitude = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    attr_name = \
+        "elliptical_distortion_vector"
+    elliptical_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    attr_name = \
+        "parabolic_distortion_vector"
+    parabolic_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    A_r_0_2 = quadratic_radial_distortion_amplitude
+    A_r_2_0 = elliptical_distortion_vector[0]
+    A_r_1_1 = parabolic_distortion_vector[0]
+
+    radial_cosine_coefficient_matrix = ((0.00000, 0.00000, A_r_0_2),
+                                        (0.00000, A_r_1_1, 0.00000), 
+                                        (A_r_2_0, 0.00000, 0.00000))
+
+    return radial_cosine_coefficient_matrix
+
+
+
+def _generate_standard_radial_sine_coefficient_matrix(
+        standard_coord_transform_params):
+    standard_coord_transform_params_core_attrs = \
+        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+
+    attr_name = \
+        "elliptical_distortion_vector"
+    elliptical_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    attr_name = \
+        "parabolic_distortion_vector"
+    parabolic_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    B_r_1_0 = elliptical_distortion_vector[1]
+    B_r_0_1 = parabolic_distortion_vector[1]
+
+    radial_sine_coefficient_matrix = ((0.00000, B_r_0_1),
+                                      (B_r_1_0, 0.00000))
+
+    return radial_sine_coefficient_matrix
+
+
+
+def _generate_standard_tangential_cosine_coefficient_matrix(
+        standard_coord_transform_params):
+    standard_coord_transform_params_core_attrs = \
+        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+    
+    attr_name = \
+        "spiral_distortion_amplitude"
+    spiral_distortion_amplitude = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    attr_name = \
+        "elliptical_distortion_vector"
+    elliptical_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    attr_name = \
+        "parabolic_distortion_vector"
+    parabolic_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    A_t_0_2 = spiral_distortion_amplitude
+    A_t_2_0 = elliptical_distortion_vector[1]
+    A_t_1_1 = parabolic_distortion_vector[1]/3
+
+    tangential_cosine_coefficient_matrix = ((0.00000, 0.00000, A_t_0_2),
+                                            (0.00000, A_t_1_1, 0.00000), 
+                                            (A_t_2_0, 0.00000, 0.00000))
+
+    return tangential_cosine_coefficient_matrix
+
+
+
+def _generate_standard_tangential_sine_coefficient_matrix(
+        standard_coord_transform_params):
+    standard_coord_transform_params_core_attrs = \
+        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+    
+    attr_name = \
+        "elliptical_distortion_vector"
+    elliptical_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    attr_name = \
+        "parabolic_distortion_vector"
+    parabolic_distortion_vector = \
+        standard_coord_transform_params_core_attrs[attr_name]
+
+    B_t_1_0 = -elliptical_distortion_vector[0]
+    B_t_0_1 = -parabolic_distortion_vector[0]/3
+
+    tangential_sine_coefficient_matrix = ((0.00000, B_t_0_1), 
+                                          (B_t_1_0, 0.00000))
+
+    return tangential_sine_coefficient_matrix
 
 
 
@@ -1426,11 +2049,11 @@ class LeastSquaresAlgParams(_cls_alias):
     the mapping of fractional Cartesian coordinates of distorted images to those
     of the corresponding undistorted images.
 
-    Users are encouraged to read the summary documentation of the class
+    Users are encouraged to read the summary documentation for the class
     :class:`distoptica.DistortionModel` before reading the documentation for the
     current class as it provides essential context to what is discussed below.
 
-    As discussed in the summary documentation of the class
+    As discussed in the summary documentation for the class
     :class:`distoptica.DistortionModel`, optical distortions introduced in an
     imaging experiment can be described by a coordinate transformation,
     comprising of two components: :math:`T_{⌑;x}\left(u_{x},u_{y}\right)` and
@@ -2612,6 +3235,49 @@ _default_distorted_images = ((0.0,),)
 
 
 
+def _check_and_convert_coord_transform_params(params):
+    obj_name = "coord_transform_params"
+    obj = params[obj_name]
+
+    accepted_types = (CoordTransformParams,
+                      StandardCoordTransformParams,
+                      type(None))
+
+    if isinstance(obj, accepted_types[2]):
+        coord_transform_params = accepted_types[0]()
+    elif isinstance(obj, accepted_types[1]):
+        func_alias = from_standard_to_generic_coord_transform_params
+        kwargs = {"standard_coord_transform_params": obj,
+                  "skip_validation_and_conversion": True}
+        coord_transform_params = func_alias(**kwargs)
+    else:
+        func_alias = czekitout.check.if_instance_of_any_accepted_types
+        kwargs = {"obj": obj,
+                  "obj_name": obj_name,
+                  "accepted_types": accepted_types}
+        func_alias(**kwargs)
+        coord_transform_params = copy.deepcopy(obj)
+
+    return coord_transform_params
+
+
+
+def _pre_serialize_coord_transform_params(coord_transform_params):
+    obj_to_pre_serialize = coord_transform_params
+    serializable_rep = obj_to_pre_serialize.pre_serialize()
+    
+    return serializable_rep
+
+
+
+def _de_pre_serialize_coord_transform_params(serializable_rep):
+    coord_transform_params = \
+        CoordTransformParams.de_pre_serialize(serializable_rep)
+
+    return coord_transform_params
+
+
+
 def _check_and_convert_sampling_grid_dims_in_pixels(params):
     obj_name = "sampling_grid_dims_in_pixels"
     obj = params[obj_name]
@@ -2683,6 +3349,67 @@ def _check_and_convert_deep_copy(params):
     deep_copy = czekitout.convert.to_bool(**kwargs)
 
     return deep_copy
+
+
+
+def _generate_coord_transform(coord_transform_params, device):
+    coord_transform_params_core_attrs = \
+        coord_transform_params.get_core_attrs(deep_copy=False)
+
+    coord_transform_center = coord_transform_params_core_attrs["center"]
+    coefficient_matrices = {key: coord_transform_params_core_attrs[key]
+                            for key in coord_transform_params_core_attrs
+                            if "coefficient_matrix" in key}
+
+    coefficient_matrix = \
+        coefficient_matrices["radial_cosine_coefficient_matrix"]
+    radial_cosine_amplitudes = \
+        _Polynomials(coefficient_matrix)
+
+    coefficient_matrix = \
+        coefficient_matrices["radial_sine_coefficient_matrix"]
+    radial_sine_amplitudes = \
+        _Polynomials(coefficient_matrix)
+
+    coefficient_matrix = \
+        coefficient_matrices["tangential_cosine_coefficient_matrix"]
+    tangential_cosine_amplitudes = \
+        _Polynomials(coefficient_matrix)
+
+    coefficient_matrix = \
+        coefficient_matrices["tangential_sine_coefficient_matrix"]
+    tangential_sine_amplitudes = \
+        _Polynomials(coefficient_matrix)
+
+    kwargs = {"cosine_amplitudes": radial_cosine_amplitudes,
+              "sine_amplitudes": radial_sine_amplitudes}
+    radial_fourier_series = _FourierSeries(**kwargs)
+
+    kwargs = {"cosine_amplitudes": tangential_cosine_amplitudes,
+              "sine_amplitudes": tangential_sine_amplitudes}
+    tangential_fourier_series = _FourierSeries(**kwargs)
+
+    kwargs = {"center": coord_transform_center,
+              "radial_fourier_series": radial_fourier_series,
+              "tangential_fourier_series": tangential_fourier_series}
+    coord_transform = _CoordTransform(**kwargs)
+    coord_transform = coord_transform.to(device)
+
+    return coord_transform
+
+
+
+def _generate_coord_transform_right_inverse(coord_transform_params,
+                                            least_squares_alg_params,
+                                            device):
+    coord_transform = _generate_coord_transform(coord_transform_params, device)
+
+    kwargs = {"coord_transform": coord_transform,
+              "least_squares_alg_params": least_squares_alg_params}
+    coord_transform_right_inverse = _CoordTransformRightInverse(**kwargs)
+    coord_transform_right_inverse = coord_transform_right_inverse.to(device)
+
+    return coord_transform_right_inverse
 
 
 
@@ -3114,17 +3841,19 @@ class DistortionModel(_cls_alias):
         """
         self._device = self._get_device()
 
+        self_core_attrs = self.get_core_attrs(deep_copy=False)
+        coord_transform_params = self_core_attrs["coord_transform_params"]
+        least_squares_alg_params = self_core_attrs["least_squares_alg_params"]
+
+        kwargs = \
+            {"coord_transform_params": coord_transform_params,
+             "least_squares_alg_params": least_squares_alg_params,
+             "device": self._device}
         self._coord_transform_right_inverse = \
-            self._generate_coord_transform_right_inverse()
-        self._coord_transform_right_inverse = \
-            self._coord_transform_right_inverse.to(self._device)
+            _generate_coord_transform_right_inverse(**kwargs)
         
         self._coord_transform_right_inverse.eval()
 
-        self_core_attrs = self.get_core_attrs(deep_copy=False)
-
-        coord_transform_params = \
-            self_core_attrs["coord_transform_params"]
         self._is_azimuthally_symmetric = \
             coord_transform_params._is_corresponding_model_azimuthally_symmetric
         self._is_trivial = \
@@ -3167,69 +3896,6 @@ class DistortionModel(_cls_alias):
 
 
 
-    def _generate_coord_transform_right_inverse(self):
-        self_core_attrs = self.get_core_attrs(deep_copy=False)
-        least_squares_alg_params = self_core_attrs["least_squares_alg_params"]
-        
-        coord_transform = self._generate_coord_transform()
-
-        kwargs = {"coord_transform": coord_transform,
-                  "least_squares_alg_params": least_squares_alg_params}
-        coord_transform_right_inverse = _CoordTransformRightInverse(**kwargs)
-
-        return coord_transform_right_inverse
-
-
-
-    def _generate_coord_transform(self):
-        self_core_attrs = self.get_core_attrs(deep_copy=False)
-        coord_transform_params = self_core_attrs["coord_transform_params"]
-
-        coord_transform_params_core_attrs = \
-            coord_transform_params.get_core_attrs(deep_copy=False)
-
-        coord_transform_center = coord_transform_params_core_attrs["center"]
-        coefficient_matrices = {key: coord_transform_params_core_attrs[key]
-                                for key in coord_transform_params_core_attrs
-                                if "coefficient_matrix" in key}
-
-        coefficient_matrix = \
-            coefficient_matrices["radial_cosine_coefficient_matrix"]
-        radial_cosine_amplitudes = \
-            _Polynomials(coefficient_matrix)
-
-        coefficient_matrix = \
-            coefficient_matrices["radial_sine_coefficient_matrix"]
-        radial_sine_amplitudes = \
-            _Polynomials(coefficient_matrix)
-
-        coefficient_matrix = \
-            coefficient_matrices["tangential_cosine_coefficient_matrix"]
-        tangential_cosine_amplitudes = \
-            _Polynomials(coefficient_matrix)
-
-        coefficient_matrix = \
-            coefficient_matrices["tangential_sine_coefficient_matrix"]
-        tangential_sine_amplitudes = \
-            _Polynomials(coefficient_matrix)
-
-        kwargs = {"cosine_amplitudes": radial_cosine_amplitudes,
-                  "sine_amplitudes": radial_sine_amplitudes}
-        radial_fourier_series = _FourierSeries(**kwargs)
-
-        kwargs = {"cosine_amplitudes": tangential_cosine_amplitudes,
-                  "sine_amplitudes": tangential_sine_amplitudes}
-        tangential_fourier_series = _FourierSeries(**kwargs)
-
-        kwargs = {"center": coord_transform_center,
-                  "radial_fourier_series": radial_fourier_series,
-                  "tangential_fourier_series": tangential_fourier_series}
-        coord_transform = _CoordTransform(**kwargs)
-
-        return coord_transform
-
-
-
     def _calc_sampling_grid(self):
         self_core_attrs = self.get_core_attrs(deep_copy=False)
 
@@ -3265,7 +3931,7 @@ class DistortionModel(_cls_alias):
                                      _default_undistorted_images):
         r"""Distort then resample a 1D stack of undistorted images.
 
-        See the summary documentation of the class
+        See the summary documentation for the class
         :class:`distoptica.DistortionModel` for additional context.
 
         Each undistorted image is distorted and subsequently resampled according
@@ -3280,7 +3946,7 @@ class DistortionModel(_cls_alias):
             ``IndexError`` exception upon calling ``undistorted_images[l, k, n,
             m]``, ``undistorted_images[l, k, n, m]`` is interpreted to be the
             quantity :math:`\mathcal{I}_{\square;l,k,n,m}`, introduced in the
-            summary documentation of the class
+            summary documentation for the class
             :class:`distoptica.DistortionModel`, with the integers :math:`l`,
             :math:`k`, :math:`n`, and :math:`m` being equal to the values of
             ``l``, ``k``, ``n``, and ``m`` respectively, and the quadruplet of
@@ -3320,13 +3986,13 @@ class DistortionModel(_cls_alias):
             ``distorted_then_resampled_images[l, k, i, j]``,
             ``distorted_then_resampled_images[l, k, i, j]`` is interpreted to be
             the quantity :math:`\mathring{\mathcal{I}}_{⌑;l,k,i,j}`, introduced
-            in the summary documentation of the class
+            in the summary documentation for the class
             :class:`distoptica.DistortionModel`, with the integers :math:`l`,
             :math:`k`, :math:`i`, and :math:`j` being equal to the values of
             ``l``, ``k``, ``i``, and ``j`` respectively, with the quadruplet of
             integers :math:`\left(N_{\mathcal{I}},N_{\mathcal{I};C},
             N_{\mathring{\mathcal{I}};y},N_{\mathring{\mathcal{I}};x}\right)`,
-            introduced in the summary documentation of the class
+            introduced in the summary documentation for the class
             :class:`distoptica.DistortionModel`, being equal to the shape of
             ``distorted_then_resampled_images``.
 
@@ -3474,10 +4140,10 @@ class DistortionModel(_cls_alias):
             ``IndexError`` exception upon calling ``distorted_images[l, k, n,
             m]``, ``distorted_images[l, k, n, m]`` is interpreted to be the
             quantity :math:`\mathcal{I}_{⌑;l,k,n,m}`, introduced in the summary
-            documentation of the class :class:`distoptica.DistortionModel`, with
-            the integers :math:`l`, :math:`k`, :math:`n`, and :math:`m` being
-            equal to the values of ``l``, ``k``, ``n``, and ``m`` respectively,
-            and the quadruplet of integers
+            documentation for the class :class:`distoptica.DistortionModel`,
+            with the integers :math:`l`, :math:`k`, :math:`n`, and :math:`m`
+            being equal to the values of ``l``, ``k``, ``n``, and ``m``
+            respectively, and the quadruplet of integers
             :math:`\left(N_{\mathcal{I}},N_{\mathcal{I};C},N_{\mathcal{I};y},
             N_{\mathcal{I};x}\right)`, introduced in the summary documentation
             of the class :class:`distoptica.DistortionModel`, being equal to the
@@ -3513,13 +4179,13 @@ class DistortionModel(_cls_alias):
             ``undistorted_then_resampled_images[l, k, i, j]``,
             ``undistorted_then_resampled_images[l, k, i, j]`` is interpreted to
             be the quantity :math:`\mathring{\mathcal{I}}_{\square;l,k,i,j}`,
-            introduced in the summary documentation of the class
+            introduced in the summary documentation for the class
             :class:`distoptica.DistortionModel`, with the integers :math:`l`,
             :math:`k`, :math:`i`, and :math:`j` being equal to the values of
             ``l``, ``k``, ``i``, and ``j`` respectively, with the quadruplet of
             integers :math:`\left(N_{\mathcal{I}},N_{\mathcal{I};C},
             N_{\mathring{\mathcal{I}};y},N_{\mathring{\mathcal{I}};x}\right)`,
-            introduced in the summary documentation of the class
+            introduced in the summary documentation for the class
             :class:`distoptica.DistortionModel`, being equal to the shape of
             ``undistorted_then_resampled_images``.
 
@@ -3711,7 +4377,7 @@ class DistortionModel(_cls_alias):
     def sampling_grid(self):
         r"""`array_like`: The fractional coordinates of the sampling grid.
 
-        See the summary documentation of the class
+        See the summary documentation for the class
         :class:`distoptica.DistortionModel` for additional context.
 
         ``sampling_grid`` is a 2-element tuple, where ``sampling_grid[0]`` and
@@ -3906,7 +4572,7 @@ class DistortionModel(_cls_alias):
         r"""`array_like`: The flow field of the coordinate transformation 
         corresponding to the distortion model.
 
-        See the summary documentation of the class
+        See the summary documentation for the class
         :class:`distoptica.DistortionModel` for additional context.
 
         ``flow_field_of_coord_transform`` is a 2-element tuple, where
@@ -4113,7 +4779,7 @@ class DistortionModel(_cls_alias):
         r"""`torch.Tensor`: The out-of-bounds map of undistorted then resampled 
         images.
 
-        See the summary documentation of the class
+        See the summary documentation for the class
         :class:`distoptica.DistortionModel` for additional context.
 
         ``out_of_bounds_map_of_undistorted_then_resampled_images`` is a PyTorch
@@ -4197,7 +4863,7 @@ class DistortionModel(_cls_alias):
         r"""`torch.Tensor`: The out-of-bounds map of distorted then resampled 
         images.
 
-        See the summary documentation of the class
+        See the summary documentation for the class
         :class:`distoptica.DistortionModel` for additional context.
 
         ``out_of_bounds_map_of_distorted_then_resampled_images`` is a PyTorch
@@ -4264,443 +4930,6 @@ class DistortionModel(_cls_alias):
 
 
 
-def _check_and_convert_quadratic_radial_distortion_amplitude(params):
-    obj_name = "quadratic_radial_distortion_amplitude"
-    obj = params[obj_name]
-
-    kwargs = \
-        {"obj": obj, "obj_name": obj_name}
-    quadratic_radial_distortion_amplitude = \
-        czekitout.convert.to_float(**kwargs)
-
-    return quadratic_radial_distortion_amplitude
-
-
-
-def _pre_serialize_quadratic_radial_distortion_amplitude(
-        quadratic_radial_distortion_amplitude):
-    obj_to_pre_serialize = quadratic_radial_distortion_amplitude
-    serializable_rep = obj_to_pre_serialize
-    
-    return serializable_rep
-
-
-
-def _de_pre_serialize_quadratic_radial_distortion_amplitude(serializable_rep):
-    quadratic_radial_distortion_amplitude = serializable_rep
-
-    return quadratic_radial_distortion_amplitude
-
-
-
-def _check_and_convert_elliptical_distortion_vector(params):
-    obj_name = "elliptical_distortion_vector"
-    obj = params[obj_name]
-
-    kwargs = {"obj": obj, "obj_name": obj_name}
-    elliptical_distortion_vector = czekitout.convert.to_pair_of_floats(**kwargs)
-
-    return elliptical_distortion_vector
-
-
-
-def _pre_serialize_elliptical_distortion_vector(elliptical_distortion_vector):
-    obj_to_pre_serialize = elliptical_distortion_vector
-    serializable_rep = obj_to_pre_serialize
-    
-    return serializable_rep
-
-
-
-def _de_pre_serialize_elliptical_distortion_vector(serializable_rep):
-    elliptical_distortion_vector = serializable_rep
-
-    return elliptical_distortion_vector
-
-
-
-def _check_and_convert_spiral_distortion_amplitude(params):
-    obj_name = "spiral_distortion_amplitude"
-    obj = params[obj_name]
-
-    kwargs = \
-        {"obj": obj, "obj_name": obj_name}
-    spiral_distortion_amplitude = \
-        czekitout.convert.to_float(**kwargs)
-
-    return spiral_distortion_amplitude
-
-
-
-def _pre_serialize_spiral_distortion_amplitude(spiral_distortion_amplitude):
-    obj_to_pre_serialize = spiral_distortion_amplitude
-    serializable_rep = obj_to_pre_serialize
-    
-    return serializable_rep
-
-
-
-def _de_pre_serialize_spiral_distortion_amplitude(serializable_rep):
-    spiral_distortion_amplitude = serializable_rep
-
-    return spiral_distortion_amplitude
-
-
-
-def _check_and_convert_parabolic_distortion_vector(params):
-    obj_name = "parabolic_distortion_vector"
-    obj = params[obj_name]
-
-    kwargs = {"obj": obj, "obj_name": obj_name}
-    parabolic_distortion_vector = czekitout.convert.to_pair_of_floats(**kwargs)
-
-    return parabolic_distortion_vector
-
-
-
-def _pre_serialize_parabolic_distortion_vector(parabolic_distortion_vector):
-    obj_to_pre_serialize = parabolic_distortion_vector
-    serializable_rep = obj_to_pre_serialize
-    
-    return serializable_rep
-
-
-
-def _de_pre_serialize_parabolic_distortion_vector(serializable_rep):
-    parabolic_distortion_vector = serializable_rep
-
-    return parabolic_distortion_vector
-
-
-
-_default_quadratic_radial_distortion_amplitude = 0
-_default_elliptical_distortion_vector = (0, 0)
-_default_spiral_distortion_amplitude = 0
-_default_parabolic_distortion_vector = (0, 0)
-
-
-
-_cls_alias = fancytypes.PreSerializableAndUpdatable
-class StandardCoordTransformParams(_cls_alias):
-    r"""The parameters of a standard trigonometric series defining a coordinate 
-    transformation.
-
-    Users are encouraged to read the summary documentation of the classes
-    :class:`distoptica.DistortionModel` and
-    :class:`distoptica.CoordTransformParams` before reading the documentation
-    for the current class as it provides essential context to what is discussed
-    below.
-
-    Motivated by transmission electron microscopy experiments, we define a class
-    of standard coordinate transformations, where each standard coordinate
-    transformation comprises of two components:
-    :math:`T_{⌑;x}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)` and
-    :math:`T_{⌑;y}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)`.
-    :math:`T_{⌑;x}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)` and
-    :math:`T_{⌑;y}^{\left(\text{std}\right)}\left(u_{x},u_{y}\right)` have the
-    mathematical forms of Eqs. :eq:`T_distsq_x__1` and :eq:`T_distsq_y__1`
-    respectively, only that the radial cosine coefficient matrix
-    :math:`A_{r;v_{1},v_{2}}` has the following form:
-
-    .. math ::
-        A_{r;v_{1},v_{2}}=\begin{pmatrix}0 & 0 & A_{r;0,2}\\
-        0 & A_{r;1,1} & 0\\
-        A_{r;2,0} & 0 & 0
-        \end{pmatrix},
-        :label: std_radial_cosine_coefficient_matrix__1
-
-    the radial sine coefficient matrix :math:`B_{r;v_{1},v_{2}}` has the
-    following form:
-
-    .. math ::
-        B_{r;v_{1},v_{2}}=\begin{pmatrix}0 & B_{r;0,1}\\
-        B_{r;1,0} & 0
-        \end{pmatrix},
-        :label: std_radial_sine_coefficient_matrix__1
-
-    the tangential cosine coefficient matrix :math:`A_{t;v_{1},v_{2}}` has the
-    following form:
-
-    .. math ::
-        A_{t;v_{1},v_{2}}=\begin{pmatrix}0 & 0 & A_{t;0,2}\\
-        0 & A_{t;1,1} & 0\\
-        A_{t;2,0} & 0 & 0
-        \end{pmatrix},
-        :label: std_tangential_cosine_coefficient_matrix__1
-
-    with
-
-    .. math ::
-        A_{t;2,0}=B_{r;1,0},
-        :label: A_t_2_0__1
-
-    .. math ::
-        A_{t;1,1}=\frac{1}{3}B_{r;0,1},
-        :label: A_r_1_1__1
-
-    and the tangential sine coefficient matrix :math:`B_{t;v_{1},v_{2}}` has the
-    following form:
-
-    .. math ::
-        B_{t;v_{1},v_{2}}=\begin{pmatrix}0 & B_{t;0,1}\\
-        B_{t;1,0} & 0
-        \end{pmatrix},
-        :label: std_tangential_sine_coefficient_matrix__1
-
-    with
-
-    .. math ::
-        B_{t;0,1}=-\frac{1}{3}A_{r;1,1},
-        :label: B_t_0_1__1
-    
-    .. math ::
-        B_{t;1,0}=-A_{r;2,0}.
-        :label: B_t_1_0__1
-
-    Parameters
-    ----------
-    center : `array_like` (`float`, shape=(2,)), optional
-        The distortion center :math:`\left(x_{c;D},y_{c;D}\right)`, introduced
-        in the summary documentation of the class
-        :class:`distoptica.CoordTransformParams`, where ``center[0]`` and
-        ``center[1]`` are :math:`x_{c;D}` and :math:`y_{c;D}` respectively.
-    quadratic_radial_distortion_amplitude : `float`, optional
-        The coefficient :math:`A_{r;0,2}`, which we refer to as the quadratic
-        radial distortion amplitude.
-    elliptical_distortion_vector : `array_like` (`float`, shape=(2,)), optional
-        The coefficient pair :math:`\left(A_{r;2,0},B_{r;1,0}\right)`, which we
-        refer to as the elliptical distortion vector, where
-        ``elliptical_distortion_vector[0]`` and
-        ``elliptical_distortion_vector[1]`` are :math:`A_{r;2,0}` and
-        :math:`B_{r;1,0}` respectively.
-    spiral_distortion_amplitude : `float`, optional
-        The coefficient :math:`A_{t;0,2}`, which we refer to as the spiral
-        distortion amplitude.
-    parabolic_distortion_vector : `array_like` (`float`, shape=(2,)), optional
-        The coefficient pair :math:`\left(A_{r;1,1},B_{r;0,1}\right)`, which we
-        refer to as the parabolic distortion vector, where
-        ``parabolic_distortion_vector[0]`` and
-        ``parabolic_distortion_vector[1]`` are :math:`A_{r;1,1}` and
-        :math:`B_{r;0,1}` respectively.
-    skip_validation_and_conversion : `bool`, optional
-        Let ``validation_and_conversion_funcs`` and ``core_attrs`` denote the
-        attributes :attr:`~fancytypes.Checkable.validation_and_conversion_funcs`
-        and :attr:`~fancytypes.Checkable.core_attrs` respectively, both of which
-        being `dict` objects.
-
-        Let ``params_to_be_mapped_to_core_attrs`` denote the `dict`
-        representation of the constructor parameters excluding the parameter
-        ``skip_validation_and_conversion``, where each `dict` key ``key`` is a
-        different constructor parameter name, excluding the name
-        ``"skip_validation_and_conversion"``, and
-        ``params_to_be_mapped_to_core_attrs[key]`` would yield the value of the
-        constructor parameter with the name given by ``key``.
-
-        If ``skip_validation_and_conversion`` is set to ``False``, then for each
-        key ``key`` in ``params_to_be_mapped_to_core_attrs``,
-        ``core_attrs[key]`` is set to ``validation_and_conversion_funcs[key]
-        (params_to_be_mapped_to_core_attrs)``.
-
-        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
-        then ``core_attrs`` is set to
-        ``params_to_be_mapped_to_core_attrs.copy()``. This option is desired
-        primarily when the user wants to avoid potentially expensive deep copies
-        and/or conversions of the `dict` values of
-        ``params_to_be_mapped_to_core_attrs``, as it is guaranteed that no
-        copies or conversions are made in this case.
-
-    """
-    ctor_param_names = ("center",
-                        "quadratic_radial_distortion_amplitude",
-                        "elliptical_distortion_vector",
-                        "spiral_distortion_amplitude",
-                        "parabolic_distortion_vector")
-    kwargs = {"namespace_as_dict": globals(),
-              "ctor_param_names": ctor_param_names}
-    
-    _validation_and_conversion_funcs_ = \
-        fancytypes.return_validation_and_conversion_funcs(**kwargs)
-    _pre_serialization_funcs_ = \
-        fancytypes.return_pre_serialization_funcs(**kwargs)
-    _de_pre_serialization_funcs_ = \
-        fancytypes.return_de_pre_serialization_funcs(**kwargs)
-
-    del ctor_param_names, kwargs
-
-    
-
-    def __init__(self,
-                 center=\
-                 _default_center,
-                 quadratic_radial_distortion_amplitude=\
-                 _default_quadratic_radial_distortion_amplitude,
-                 elliptical_distortion_vector=\
-                 _default_elliptical_distortion_vector,
-                 spiral_distortion_amplitude=\
-                 _default_spiral_distortion_amplitude,
-                 parabolic_distortion_vector=\
-                 _default_parabolic_distortion_vector,
-                 skip_validation_and_conversion=\
-                 _default_skip_validation_and_conversion):
-        ctor_params = {key: val
-                       for key, val in locals().items()
-                       if (key not in ("self", "__class__"))}
-        kwargs = ctor_params
-        kwargs["skip_cls_tests"] = True
-        fancytypes.PreSerializableAndUpdatable.__init__(self, **kwargs)
-
-        self.execute_post_core_attrs_update_actions()
-
-        return None
-
-
-
-    @classmethod
-    def get_validation_and_conversion_funcs(cls):
-        validation_and_conversion_funcs = \
-            cls._validation_and_conversion_funcs_.copy()
-
-        return validation_and_conversion_funcs
-
-
-    
-    @classmethod
-    def get_pre_serialization_funcs(cls):
-        pre_serialization_funcs = \
-            cls._pre_serialization_funcs_.copy()
-
-        return pre_serialization_funcs
-
-
-    
-    @classmethod
-    def get_de_pre_serialization_funcs(cls):
-        de_pre_serialization_funcs = \
-            cls._de_pre_serialization_funcs_.copy()
-
-        return de_pre_serialization_funcs
-
-
-
-    def execute_post_core_attrs_update_actions(self):
-        r"""Execute the sequence of actions that follows immediately after 
-        updating the core attributes.
-
-        """
-        self_core_attrs = self.get_core_attrs(deep_copy=False)
-
-        quadratic_radial_distortion_amplitude = \
-            self_core_attrs["quadratic_radial_distortion_amplitude"]
-        elliptical_distortion_vector = \
-            self_core_attrs["elliptical_distortion_vector"]
-        spiral_distortion_amplitude = \
-            self_core_attrs["spiral_distortion_amplitude"]
-        parabolic_distortion_vector = \
-            self_core_attrs["parabolic_distortion_vector"]
-
-        if ((np.linalg.norm(elliptical_distortion_vector) == 0)
-            and (np.linalg.norm(parabolic_distortion_vector) == 0)
-            and np.abs(spiral_distortion_amplitude) == 0):
-            self._is_corresponding_model_azimuthally_symmetric = True
-            if np.abs(quadratic_radial_distortion_amplitude) == 0:
-                self._is_corresponding_model_trivial = True
-            else:
-                self._is_corresponding_model_trivial = False
-        else:
-            self._is_corresponding_model_azimuthally_symmetric = False
-            self._is_corresponding_model_trivial = False
-
-        return None
-
-
-
-    def update(self,
-               new_core_attr_subset_candidate,
-               skip_validation_and_conversion=\
-               _default_skip_validation_and_conversion):
-        super().update(new_core_attr_subset_candidate,
-                       skip_validation_and_conversion)
-        self.execute_post_core_attrs_update_actions()
-
-        return None
-
-
-
-    @property
-    def is_corresponding_model_azimuthally_symmetric(self):
-        r"""`bool`: A boolean variable indicating whether the corresponding 
-        distortion model is azimuthally symmetric.
-
-        If ``is_corresponding_model_azimuthally_symmetric`` is set to ``True``,
-        then the distortion model corresponding to the coordinate transformation
-        parameters is azimuthally symmetric. Otherwise, the distortion model is
-        not azimuthally symmetric.
-
-        Note that ``is_corresponding_model_azimuthally_symmetric`` should be
-        considered **read-only**.
-
-        """
-        result = self._is_corresponding_model_azimuthally_symmetric
-        
-        return result
-
-
-
-    @property
-    def is_corresponding_model_trivial(self):
-        r"""`bool`: A boolean variable indicating whether the corresponding 
-        distortion model is trivial.
-
-        We define a trivial distortion model to be one with a corresponding
-        coordinate transformation that is equivalent to the identity
-        transformation.
-
-        If ``is_corresponding_model_trivial`` is set to ``True``, then the
-        distortion model corresponding to the coordinate transformation
-        parameters is trivial. Otherwise, the distortion model is not trivial.
-
-        Note that ``is_corresponding_model_trivial`` should be considered
-        **read-only**.
-
-        """
-        result = self._is_corresponding_model_trivial
-    
-        return result
-
-
-
-def _check_and_convert_standard_coord_transform_params(params):
-    obj_name = "standard_coord_transform_params"
-    obj = params[obj_name]
-
-    accepted_types = (StandardCoordTransformParams, type(None))
-
-    if isinstance(obj, accepted_types[1]):
-        standard_coord_transform_params = accepted_types[0]()
-    else:
-        kwargs = {"obj": obj,
-                  "obj_name": obj_name,
-                  "accepted_types": accepted_types}
-        czekitout.check.if_instance_of_any_accepted_types(**kwargs)
-        standard_coord_transform_params = copy.deepcopy(obj)
-
-    return standard_coord_transform_params
-
-
-
-def _check_and_convert_skip_validation_and_conversion(params):
-    obj_name = "skip_validation_and_conversion"
-    kwargs = {"obj": params[obj_name], "obj_name": obj_name}
-    skip_validation_and_conversion = czekitout.convert.to_bool(**kwargs)
-
-    return skip_validation_and_conversion
-
-
-
-_default_standard_coord_transform_params = None
-
-
-
 def generate_standard_distortion_model(standard_coord_transform_params=\
                                        _default_standard_coord_transform_params,
                                        sampling_grid_dims_in_pixels=\
@@ -4713,7 +4942,7 @@ def generate_standard_distortion_model(standard_coord_transform_params=\
                                        _default_skip_validation_and_conversion):
     r"""Generate a “standard” optical distortion model.
 
-    Users are encouraged to read the summary documentation of the classes
+    Users are encouraged to read the summary documentation for the classes
     :class:`distoptica.DistortionModel`,
     :class:`distoptica.CoordTransformParams`, and
     :class:`distoptica.StandardCoordTransformParams` before reading the
@@ -4774,7 +5003,7 @@ def generate_standard_distortion_model(standard_coord_transform_params=\
     if (skip_validation_and_conversion == False):
         global_symbol_table = globals()
         for param_name in params:
-            if param_name == "skip_validation_and_conversion":
+            if param_name in ("skip_validation_and_conversion",):
                 continue
             func_name = "_check_and_convert_" + param_name
             func_alias = global_symbol_table[func_name]
@@ -4792,35 +5021,11 @@ def _generate_standard_distortion_model(standard_coord_transform_params,
                                         device_name,
                                         least_squares_alg_params,
                                         skip_validation_and_conversion):
-    standard_coord_transform_params_core_attrs = \
-        standard_coord_transform_params.get_core_attrs(deep_copy=False)
-    center = \
-        standard_coord_transform_params_core_attrs["center"]
-
     kwargs = \
-        {"standard_coord_transform_params": standard_coord_transform_params}
-    radial_cosine_coefficient_matrix = \
-        _generate_standard_radial_cosine_coefficient_matrix(**kwargs)
-    radial_sine_coefficient_matrix = \
-        _generate_standard_radial_sine_coefficient_matrix(**kwargs)
-    tangential_cosine_coefficient_matrix = \
-        _generate_standard_tangential_cosine_coefficient_matrix(**kwargs)
-    tangential_sine_coefficient_matrix = \
-        _generate_standard_tangential_sine_coefficient_matrix(**kwargs)
-
-    kwargs = {"center": \
-              center,
-              "radial_cosine_coefficient_matrix": \
-              radial_cosine_coefficient_matrix,
-              "radial_sine_coefficient_matrix": \
-              radial_sine_coefficient_matrix,
-              "tangential_cosine_coefficient_matrix": \
-              tangential_cosine_coefficient_matrix,
-              "tangential_sine_coefficient_matrix": \
-              tangential_sine_coefficient_matrix,
-              "skip_validation_and_conversion": \
-              skip_validation_and_conversion}
-    coord_transform_params = CoordTransformParams(**kwargs)
+        {"standard_coord_transform_params": standard_coord_transform_params,
+         "skip_validation_and_conversion": skip_validation_and_conversion}
+    coord_transform_params = \
+        from_standard_to_generic_coord_transform_params(**kwargs)
 
     kwargs = {"coord_transform_params": coord_transform_params,
               "sampling_grid_dims_in_pixels": sampling_grid_dims_in_pixels,
@@ -4833,117 +5038,375 @@ def _generate_standard_distortion_model(standard_coord_transform_params,
 
 
 
-def _generate_standard_radial_cosine_coefficient_matrix(
-        standard_coord_transform_params):
-    standard_coord_transform_params_core_attrs = \
-        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+def _check_and_convert_cartesian_coords(params):
+    obj_name = "prefix_of_aliases_of_real_torch_matrices"
+    prefix = params[obj_name]
 
-    attr_name = \
-        "quadratic_radial_distortion_amplitude"
-    quadratic_radial_distortion_amplitude = \
-        standard_coord_transform_params_core_attrs[attr_name]
+    names_of_aliases_of_real_torch_matrices = ("{}_x".format(prefix),
+                                               "{}_y".format(prefix))
 
-    attr_name = \
-        "elliptical_distortion_vector"
-    elliptical_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
+    obj_name = "cartesian_coords"
+    cartesian_coords = list(params[obj_name])
 
-    attr_name = \
-        "parabolic_distortion_vector"
-    parabolic_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
+    num_tensor_objs = len(cartesian_coords)
 
-    A_r_0_2 = quadratic_radial_distortion_amplitude
-    A_r_2_0 = elliptical_distortion_vector[0]
-    A_r_1_1 = parabolic_distortion_vector[0]
+    for tensor_obj_idx in range(num_tensor_objs):
+        params["real_torch_matrix"] = \
+            cartesian_coords[tensor_obj_idx]
+        params["name_of_alias_of_real_torch_matrix"] = \
+            names_of_aliases_of_real_torch_matrices[tensor_obj_idx]
+        cartesian_coords[tensor_obj_idx] = \
+            _check_and_convert_real_torch_matrix(params)
 
-    radial_cosine_coefficient_matrix = ((0.00000, 0.00000, A_r_0_2),
-                                        (0.00000, A_r_1_1, 0.00000), 
-                                        (A_r_2_0, 0.00000, 0.00000))
+    cartesian_coords = tuple(cartesian_coords)
 
-    return radial_cosine_coefficient_matrix
+    del params["real_torch_matrix"]
+    del params["name_of_alias_of_real_torch_matrix"]
 
+    current_func_name = "_check_and_convert_cartesian_coords"
 
+    if cartesian_coords[0].shape != cartesian_coords[1].shape:
+        unformatted_err_msg = globals()[current_func_name+"_err_msg_1"]
+        args = names_of_aliases_of_real_torch_matrices
+        err_msg = unformatted_err_msg.format(*args)
+        raise ValueError(err_msg)
 
-def _generate_standard_radial_sine_coefficient_matrix(
-        standard_coord_transform_params):
-    standard_coord_transform_params_core_attrs = \
-        standard_coord_transform_params.get_core_attrs(deep_copy=False)
-
-    attr_name = \
-        "elliptical_distortion_vector"
-    elliptical_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
-
-    attr_name = \
-        "parabolic_distortion_vector"
-    parabolic_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
-
-    B_r_1_0 = elliptical_distortion_vector[1]
-    B_r_0_1 = parabolic_distortion_vector[1]
-
-    radial_sine_coefficient_matrix = ((0.00000, B_r_0_1),
-                                      (B_r_1_0, 0.00000))
-
-    return radial_sine_coefficient_matrix
+    return cartesian_coords
 
 
 
-def _generate_standard_tangential_cosine_coefficient_matrix(
-        standard_coord_transform_params):
-    standard_coord_transform_params_core_attrs = \
-        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+def _check_and_convert_real_torch_matrix(params):
+    obj_name = "real_torch_matrix"
+    obj = params[obj_name]
     
-    attr_name = \
-        "spiral_distortion_amplitude"
-    spiral_distortion_amplitude = \
-        standard_coord_transform_params_core_attrs[attr_name]
+    name_of_alias_of_real_torch_matrix = \
+        params["name_of_alias_of_real_torch_matrix"]
 
-    attr_name = \
-        "elliptical_distortion_vector"
-    elliptical_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
+    current_func_name = "_check_and_convert_real_torch_matrix"
 
-    attr_name = \
-        "parabolic_distortion_vector"
-    parabolic_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
+    try:
+        if not isinstance(obj, torch.Tensor):
+            kwargs = {"obj": obj,
+                      "obj_name": name_of_alias_of_real_torch_matrix}
+            obj = czekitout.convert.to_real_numpy_matrix(**kwargs)
 
-    A_t_0_2 = spiral_distortion_amplitude
-    A_t_2_0 = elliptical_distortion_vector[1]
-    A_t_1_1 = parabolic_distortion_vector[1]/3
-
-    tangential_cosine_coefficient_matrix = ((0.00000, 0.00000, A_t_0_2),
-                                            (0.00000, A_t_1_1, 0.00000), 
-                                            (A_t_2_0, 0.00000, 0.00000))
-
-    return tangential_cosine_coefficient_matrix
-
-
-
-def _generate_standard_tangential_sine_coefficient_matrix(
-        standard_coord_transform_params):
-    standard_coord_transform_params_core_attrs = \
-        standard_coord_transform_params.get_core_attrs(deep_copy=False)
+            obj = torch.tensor(obj,
+                               dtype=torch.float32,
+                               device=params["device"])
     
-    attr_name = \
-        "elliptical_distortion_vector"
-    elliptical_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
+        if len(obj.shape) != 2:
+            raise
+            
+        real_torch_matrix = obj.to(device=params["device"], dtype=torch.float32)
 
-    attr_name = \
-        "parabolic_distortion_vector"
-    parabolic_distortion_vector = \
-        standard_coord_transform_params_core_attrs[attr_name]
+    except:
+        unformatted_err_msg = globals()[current_func_name+"_err_msg_1"]
+        err_msg = unformatted_err_msg.format(name_of_alias_of_real_torch_matrix)
+        raise TypeError(err_msg)
 
-    B_t_1_0 = -elliptical_distortion_vector[0]
-    B_t_0_1 = -parabolic_distortion_vector[0]/3
+    return real_torch_matrix
 
-    tangential_sine_coefficient_matrix = ((0.00000, B_t_0_1), 
-                                          (B_t_1_0, 0.00000))
 
-    return tangential_sine_coefficient_matrix
+
+def _check_and_convert_device(params):
+    params["name_of_obj_alias_of_torch_device_obj"] = "device"
+    device = _check_and_convert_torch_device_obj(params)
+
+    del params["name_of_obj_alias_of_torch_device_obj"]
+
+    return device
+
+
+
+def _check_and_convert_torch_device_obj(params):
+    obj_name = params["name_of_obj_alias_of_torch_device_obj"]
+    obj = params[obj_name]
+
+    if obj is None:
+        torch_device_obj = torch.device("cuda"
+                                        if torch.cuda.is_available()
+                                        else "cpu")
+    else:
+        kwargs = {"obj": obj,
+                  "obj_name": obj_name,
+                  "accepted_types": (torch.device, type(None))}
+        czekitout.check.if_instance_of_any_accepted_types(**kwargs)
+        torch_device_obj = obj
+
+    return torch_device_obj
+
+
+
+_default_u_x = ((0.5,),)
+_default_u_y = _default_u_x
+_default_device = None
+_default_skip_validation_and_conversion = False
+
+
+
+def apply_coord_transform(
+        u_x=_default_u_x,
+        u_y=_default_u_y,
+        coord_transform_params=_default_coord_transform_params,
+        device=_default_device,
+        skip_validation_and_conversion=_default_skip_validation_and_conversion):
+    r"""Apply a coordinate transformation to a set of coordinates of points in 
+    an undistorted image.
+
+    The current Python function applies a coordinate transformation to a set of
+    fractional coordinates of points in an undistorted image. For a discussion
+    on fractional coordinates of points in undistorted images, see the summary
+    documentation for the class :class:`distoptica.DistortionModel`. For a
+    discussion on coordinate transformations, see the summary documentation for
+    the classes :class:`distoptica.DistortionModel`,
+    :class:`distoptica.CoordTransformParams`, and
+    :class:`distoptica.StandardCoordTransformParams`.
+
+    Parameters
+    ----------
+    u_x : `torch.Tensor` (`float`, ndim=2), optional
+        The set of fractional horizontal coordinates of the points in the
+        undistorted image, for which to apply the coordinate transformation.
+    u_y : `torch.Tensor` (`float`, shape=``u_x.shape``), optional
+        The set of fractional vertical coordinates of the points in the
+        undistorted image, for which to apply the coordinate transformation.
+    coord_transform_params : :class:`distoptica.CoordTransformParams`, optional
+        The parameters defining the coordinate transformation to apply.
+    device : `torch.device` | `None`, optional
+        This parameter specifies the device to be used to perform
+        computationally intensive calls to PyTorch functions. If ``device``
+        is of the type :class:`torch.device`, then ``device`` represents the
+        device to be used. If ``device`` is set to ``None`` and a GPU device
+        is available, then a GPU device is to be used. Otherwise, the CPU is
+        used.
+    skip_validation_and_conversion : `bool`, optional
+        If ``skip_validation_and_conversion`` is set to ``False``, then
+        validations and conversions are performed on the above parameters.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        no validations and conversions are performed on the above
+        parameters. This option is desired primarily when the user wants to
+        avoid potentially expensive validation and/or conversion operations.
+
+    Returns
+    -------
+    q_x : `torch.Tensor` (`float`, shape=``u_x.shape``)
+        The set of fractional horizontal coordinates resulting from the
+        application of the coordinate transformation. For every row index ``i``
+        and column index ``j`, the coordinate pair ``(u_x[i, j], u_y[i, j])``
+        maps to the horizontal coordinate ``q_x[i, j]`` via the corresponding
+        component of the coordinate transformation.
+    q_y : `torch.Tensor` (`float`, shape=``u_y.shape``)
+        The set of fractional vertical coordinates resulting from the
+        application of the coordinate transformation. For every row index ``i``
+        and column index ``j`, the coordinate pair ``(u_x[i, j], u_y[i, j])``
+        maps to the vertical coordinate ``q_y[i, j]`` via the corresponding
+        component of the coordinate transformation.
+    """
+    params = locals()
+
+    func_alias = _check_and_convert_skip_validation_and_conversion
+    skip_validation_and_conversion = func_alias(params)
+
+    if (skip_validation_and_conversion == False):
+        global_symbol_table = globals()
+        
+        for param_name in params:
+            if param_name in ("u_x", "u_y", "skip_validation_and_conversion"):
+                continue
+            func_name = "_check_and_convert_" + param_name
+            func_alias = global_symbol_table[func_name]
+            params[param_name] = func_alias(params)
+            
+        params["cartesian_coords"] = (u_x, u_y)
+        params["prefix_of_aliases_of_real_torch_matrices"] = "u"
+        
+        u_x, u_y = _check_and_convert_cartesian_coords(params)
+        params["u_x"] = u_x
+        params["u_y"] = u_y
+        
+        del params["cartesian_coords"]
+        del params["prefix_of_aliases_of_real_torch_matrices"]
+        
+    del params["skip_validation_and_conversion"]
+
+    kwargs = params
+    q_x, q_y = _apply_coord_transform(**kwargs)
+
+    return q_x, q_y
+
+
+
+def _apply_coord_transform(u_x, u_y, coord_transform_params, device):
+    kwargs = \
+        {"coord_transform_params": coord_transform_params,
+         "least_squares_alg_params": LeastSquaresAlgParams(),
+         "device": device}
+    coord_transform_right_inverse = \
+        _generate_coord_transform_right_inverse(**kwargs)
+
+    coord_transform_inputs = dict()
+
+    method_name = "update_coord_transform_inputs"
+    method_alias = getattr(coord_transform_right_inverse, method_name)
+    kwargs = {"coord_transform_inputs": coord_transform_inputs, "p": (u_x, u_y)}
+    method_alias(**kwargs)
+
+    kwargs = {"coord_transform_inputs": \
+              coord_transform_inputs,
+              "coord_transform": \
+              coord_transform_right_inverse.coord_transform_1}
+    q_x, q_y = coord_transform_right_inverse.eval_q_hat(**kwargs)
+
+    return q_x, q_y
+
+
+
+_default_q_x = ((0.5,),)
+_default_q_y = _default_q_x
+
+
+
+def apply_coord_transform_right_inverse(
+        q_x=_default_q_x,
+        q_y=_default_q_y,
+        coord_transform_params=_default_coord_transform_params,
+        device=_default_device,
+        least_squares_alg_params=_default_least_squares_alg_params,
+        skip_validation_and_conversion=_default_skip_validation_and_conversion):
+    r"""Apply the right inverse of a coordinate transformation to a set of 
+    coordinates of points in a distorted image.
+
+    The current Python function applies the right inverse of a coordinate
+    transformation to a set of fractional coordinates of points in a distorted
+    image. For a discussion on fractional coordinates of points in distorted
+    images, see the summary documentation for the class
+    :class:`distoptica.DistortionModel`. For a discussion on right inverses of
+    coordinate transformations, see the summary documentation for the classes
+    :class:`distoptica.DistortionModel`,
+    :class:`distoptica.CoordTransformParams`, and
+    :class:`distoptica.StandardCoordTransformParams`.
+
+    Parameters
+    ----------
+    q_x : `torch.Tensor` (`float`, ndim=2), optional
+        The set of fractional horizontal coordinates of the points in the
+        distorted image, for which to apply the right inverse of the coordinate 
+        transformation.
+    q_y : `torch.Tensor` (`float`, shape=``q_x.shape``), optional
+        The set of fractional vertical coordinates of the points in the
+        distorted image, for which to apply the right inverse of the coordinate 
+        transformation.
+    coord_transform_params : :class:`distoptica.CoordTransformParams`, optional
+        The parameters defining the coordinate transformation, of which the 
+        right inverse is to be applied.
+    device : `torch.device` | `None`, optional
+        This parameter specifies the device to be used to perform
+        computationally intensive calls to PyTorch functions. If ``device``
+        is of the type :class:`torch.device`, then ``device`` represents the
+        device to be used. If ``device`` is set to ``None`` and a GPU device
+        is available, then a GPU device is to be used. Otherwise, the CPU is
+        used.
+    least_squares_alg_params : :class:`distoptica.LeastSquaresAlgParams` | `None`, optional
+        If ``least_squares_alg_params`` is set to ``None``, then the parameters
+        of the least-squares algorithm to be used to apply the right inverse of
+        the coordinate transformation are those specified by
+        ``distoptica.LeastSquaresAlgParams()``. Otherwise,
+        ``least_squares_alg_params`` specifies the parameters of the
+        least-squares algorithm to be used.
+    skip_validation_and_conversion : `bool`, optional
+        If ``skip_validation_and_conversion`` is set to ``False``, then
+        validations and conversions are performed on the above parameters.
+
+        Otherwise, if ``skip_validation_and_conversion`` is set to ``True``,
+        no validations and conversions are performed on the above
+        parameters. This option is desired primarily when the user wants to
+        avoid potentially expensive validation and/or conversion operations.
+
+    Returns
+    -------
+    u_x : `torch.Tensor` (`float`, shape=``q_x.shape``)
+        The set of fractional horizontal coordinates resulting from the
+        application of the right inverse to the coordinate transformation. For
+        every row index ``i`` and column index ``j`, the coordinate pair
+        ``(q_x[i, j], q_y[i, j])`` maps to the horizontal coordinate ``u_x[i,
+        j]`` via the corresponding component of the right inverse of the
+        coordinate transformation.
+    u_y : `torch.Tensor` (`float`, shape=``q_y.shape``)
+        The set of fractional vertical coordinates resulting from the
+        application of the right inverse to the coordinate transformation. For
+        every row index ``i`` and column index ``j`, the coordinate pair
+        ``(q_x[i, j], q_y[i, j])`` maps to the vertical coordinate ``u_y[i, j]``
+        via the corresponding component of the right inverse of the coordinate
+        transformation.
+    convergence_map : `torch.Tensor` (`bool`, shape=``q_x.shape``)
+        The convergence map of the iterative algorithm used to apply the right
+        inverse of the coordinate transformation. For every row index ``i`` and
+        column index ``j`, ``convergence_map[i, j]`` evaluates to ``False`` if
+        the iterative algorithm used to calculate ``u_x`` and ``u_y`` does not
+        converge within the error tolerance for the elements ``u_x[i, j]`` and
+        ``u_y[i, j]``, and evaluates to ``True`` otherwise.
+
+    """
+    params = locals()
+
+    func_alias = _check_and_convert_skip_validation_and_conversion
+    skip_validation_and_conversion = func_alias(params)
+
+    if (skip_validation_and_conversion == False):
+        global_symbol_table = globals()
+        
+        for param_name in params:
+            if param_name in ("q_x", "q_y", "skip_validation_and_conversion"):
+                continue
+            func_name = "_check_and_convert_" + param_name
+            func_alias = global_symbol_table[func_name]
+            params[param_name] = func_alias(params)
+            
+        params["cartesian_coords"] = (q_x, q_y)
+        params["prefix_of_aliases_of_real_torch_matrices"] = "q"
+        
+        q_x, q_y = _check_and_convert_cartesian_coords(params)
+        params["q_x"] = q_x
+        params["q_y"] = q_y
+        
+        del params["cartesian_coords"]
+        del params["prefix_of_aliases_of_real_torch_matrices"]
+        
+    del params["skip_validation_and_conversion"]
+
+    kwargs = params
+    u_x, u_y, convergence_map = _apply_coord_transform_right_inverse(**kwargs)
+
+    return u_x, u_y, convergence_map
+
+
+
+def _apply_coord_transform_right_inverse(q_x,
+                                         q_y,
+                                         coord_transform_params,
+                                         device,
+                                         least_squares_alg_params):
+    kwargs = \
+        {"coord_transform_params": coord_transform_params,
+         "least_squares_alg_params": least_squares_alg_params,
+         "device": device}
+    coord_transform_right_inverse = \
+        _generate_coord_transform_right_inverse(**kwargs)
+
+    inputs = {"q_x": q_x, "q_y": q_y}
+            
+    method_name = "initialize_levenberg_marquardt_alg_variables"
+    method_alias = getattr(coord_transform_right_inverse, method_name)
+    method_alias(inputs)
+
+    method_name = "eval_forward_output"
+    method_alias = getattr(coord_transform_right_inverse, method_name)
+    u_x, u_y = method_alias(inputs=dict())
+
+    convergence_map = coord_transform_right_inverse.convergence_map
+
+    return u_x, u_y, convergence_map
 
 
 
@@ -4971,3 +5434,10 @@ _check_and_convert_device_name_err_msg_1 = \
     ("The object ``device_name`` must be either of the type `NoneType` or "
      "`str`, wherein the latter case, ``device_name`` must be a valid device "
      "name.")
+
+_check_and_convert_cartesian_coords_err_msg_1 = \
+    ("The objects ``{}`` and ``{}`` must be real-valued matrices of the same "
+     "shape.")
+
+_check_and_convert_real_torch_matrix_err_msg_1 = \
+    ("The object ``{}`` must be a real-valued matrix.")
