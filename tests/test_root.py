@@ -1300,6 +1300,88 @@ def test_4_of_generate_standard_distortion_model():
 
 
 
+def test_1_of_apply_coord_transform():
+    q_x, q_y = distoptica.apply_coord_transform()
+
+    kwargs = {"instance_idx": 0}
+    coord_transform_params = generate_coord_transform_params(**kwargs)
+
+    kwargs = {"u_x": q_x,
+              "u_y": q_y,
+              "coord_transform_params": coord_transform_params,
+              "device": q_x.device,
+              "skip_validation_and_conversion": True}
+    _ = distoptica.apply_coord_transform(**kwargs)
+
+    kwargs = \
+        generate_standard_coord_transform_params_1_ctor_params()
+    standard_coord_transform_params = \
+        distoptica.StandardCoordTransformParams(**kwargs)
+
+    kwargs = {"coord_transform_params": standard_coord_transform_params}
+    _ = distoptica.apply_coord_transform(**kwargs)
+
+    with pytest.raises(ValueError) as err_info:
+        kwargs["u_x"] = [[0.5]]
+        kwargs["u_y"] = [[0.5, 0.5]]
+        _ = distoptica.apply_coord_transform(**kwargs)
+
+    kwargs["u_x"] = q_x
+    kwargs["u_y"] = q_y
+    kwargs["device"] = q_x.device
+    _ = distoptica.apply_coord_transform(**kwargs)
+
+    with pytest.raises(TypeError) as err_info:
+        kwargs["u_x"] = torch.tensor([[[0.5]]])
+        kwargs["u_y"] = kwargs["u_x"]
+        _ = distoptica.apply_coord_transform(**kwargs)
+
+    return None
+
+
+
+def test_1_of_apply_coord_transform_right_inverse():
+    _ = distoptica.apply_coord_transform_right_inverse()
+
+    kwargs = {"instance_idx": 0}
+    coord_transform_params = generate_coord_transform_params(**kwargs)
+
+    least_squares_alg_params = generate_least_squares_alg_params()
+
+    expected_q_x = torch.tensor([[0.35, 0.50, 0.65],
+                                 [0.35, 0.50, 0.65],
+                                 [0.35, 0.50, 0.65]])
+    expected_q_y = torch.tensor([[0.35, 0.35, 0.35],
+                                 [0.50, 0.50, 0.50],
+                                 [0.65, 0.65, 0.65]])
+
+    kwargs = \
+        {"q_x": expected_q_x,
+         "q_y": expected_q_y,
+         "coord_transform_params": coord_transform_params,
+         "device": expected_q_x.device,
+         "least_squares_alg_params": least_squares_alg_params,
+         "skip_validation_and_conversion": True}
+    u_x, u_y, convergence_map = \
+        distoptica.apply_coord_transform_right_inverse(**kwargs)
+
+    kwargs = {"u_x": u_x,
+              "u_y": u_y,
+              "coord_transform_params": coord_transform_params,
+              "device": u_x.device,
+              "skip_validation_and_conversion": True}
+    q_x, q_y = distoptica.apply_coord_transform(**kwargs)
+
+    tol = 1e-3
+
+    assert torch.all(convergence_map)
+    assert (torch.all(torch.abs(q_x-expected_q_x) < tol))
+    assert (torch.all(torch.abs(q_y-expected_q_y) < tol))
+
+    return None
+
+
+
 ###########################
 ## Define error messages ##
 ###########################
