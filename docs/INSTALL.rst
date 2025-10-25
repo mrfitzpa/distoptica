@@ -68,6 +68,7 @@ elsewhere in order to install the latest stable version of ``distoptica``, along
 with the subset of additional dependencies specified by ``<selector>``. 
 
 
+
 Installing ``distoptica`` using ``conda``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
