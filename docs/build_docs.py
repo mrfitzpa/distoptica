@@ -98,18 +98,28 @@ _mvdir("./_build/html/", "./pages/")
 
 cmd_output_as_bytes = subprocess.check_output("git tag", shell=True)
 cmd_output = cmd_output_as_bytes.decode("utf-8")
-tags = cmd_output.rstrip("\n").split("\n")
+tag_set = cmd_output.rstrip("\n").split("\n")
 
 pattern = r"v[0-9]+\.[0-9]+\.[0-9]+"
-release_tags = tuple(tag for tag in tags if re.fullmatch(pattern, tag))
+release_tag_set = tuple(tag for tag in tag_set if re.fullmatch(pattern, tag))
 
-print(release_tags)
-
-for tag in release_tags:
+version_subset = dict()
+for tag in release_tag_set:
     version = tag[1:]
-    language = "en"
-    _build_doc(version, language, tag)
-    _mvdir("./_build/html/", "./pages/"+version+"/"+language+"/")
+    major, minor, patch = [int(int_as_str) for int_as_str in version.split(".")]
+    version_subset.setdefault(major, dict())
+    version_subset[major].setdefault(minor, 0)
+    version_subset[major][minor] = max(version_subset[major][minor], patch)
+
+for major in sorted(version_subset.keys()):
+    for minor in sorted(version_subset[major].keys()):
+        patch = version_subset[major][minor]
+        version = "{}.{}.{}".format(major, minor, patch)
+        tag = "v"+version
+        major_minor = "{}.{}".format(major, minor)
+        language = "en"
+        _build_doc(version, language, tag)
+        _mvdir("./_build/html/", "./pages/"+major_minor+"/"+language+"/")
 
 subprocess.run("cd ..; pip install .; cd docs", shell=True)
 _mvdir("./pages/", "../pages/")

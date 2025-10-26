@@ -168,33 +168,54 @@ build_all_docs = os.environ.get("build_all_docs", None)
 pages_root = os.environ.get("pages_root", "")
 
 if build_all_docs is not None:
-    current_language = os.environ.get("current_language")
+    current_language = os.environ.get("current_language")    
     current_version = os.environ.get("current_version")
+
+    major, minor, patch = ((None, None, None)
+                           if (current_version == "latest")
+                           else current_version.split("."))
+    current_major_minor = ("latest"
+                           if (major is None)
+                           else "{}.{}".format(major, minor))
 
     html_context = {"current_language" : current_language,
                     "languages" : [],
-                    "current_version" : current_version,
+                    "current_version" : current_major_minor,
                     "versions" : []}
 
-    if (current_version == "latest"):
+    if current_version == "latest":
         html_context["languages"].append(["en", pages_root])
 
-    if (current_language == "en"):
+    if current_language == "en":
         html_context["versions"].append(["latest", pages_root])
 
     cmd_output_as_bytes = subprocess.check_output("git tag", shell=True)
     cmd_output = cmd_output_as_bytes.decode("utf-8")
-    tags = cmd_output.rstrip("\n").split("\n")
+    tag_set = cmd_output.rstrip("\n").split("\n")
 
     pattern = r"v[0-9]+\.[0-9]+\.[0-9]+"
-    release_tags = tuple(tag for tag in tags if re.fullmatch(pattern, tag))
+    release_tag_set = tuple(tag
+                            for tag
+                            in tag_set
+                            if re.fullmatch(pattern, tag))
 
-    if (current_version != "latest"):
+    version_subset = dict()
+    for tag in release_tag_set:
+        version = tag[1:]
+        major, minor, patch = [int(int_as_str)
+                               for int_as_str
+                               in version.split(".")]
+        version_subset.setdefault(major, dict())
+        version_subset[major].setdefault(minor, 0)
+        version_subset[major][minor] = max(version_subset[major][minor], patch)
+
+    if current_version != "latest":
         language = "en"
-        path = pages_root+"/"+current_version+"/"+language
+        path = pages_root+"/"+current_major_minor+"/"+language
         html_context["languages"].append([language, path])
 
-    for tag in release_tags:
-        version = tag[1:]
-        path = pages_root+"/"+version+"/"+current_language
-        html_context["versions"].append([version, path])
+    for major in sorted(version_subset.keys()):
+        for minor in sorted(version_subset[major].keys()):
+            major_minor = "{}.{}".format(major, minor)
+            path = pages_root+"/"+major_minor+"/"+current_language
+            html_context["versions"].append([major_minor, path])
