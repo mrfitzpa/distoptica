@@ -1,3 +1,8 @@
+.. meta::
+   :google-site-verification: kxE4d_wW0ikuxlKuVCgIxNZT81VDOxKWJ7R9mbTnvKA
+
+
+
 DistOptica
 ==========
 
