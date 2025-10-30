@@ -3451,11 +3451,14 @@ class DistortionModel(_cls_alias):
     coordinates. First, let :math:`u_{x}` and :math:`u_{y}` be the fractional
     horizontal and vertical coordinates, respectively, of a point in an
     undistorted image, where :math:`\left(u_{x},u_{y}\right)=\left(0,0\right)`
-    is the bottom left corner of the image. Secondly, let :math:`q_{x}` and
-    :math:`q_{y}` be the fractional horizontal and vertical coordinates,
-    respectively, of a point in a distorted image, where
-    :math:`\left(q_{x},q_{y}\right)=\left(0,0\right)` is the bottom left corner
-    of the image.
+    :math:`\left[\left(u_{x},u_{y}\right)=\left(1,1\right)\right]` is the lower
+    left [upper right] corner of the lower left [upper right] pixel of the
+    undistorted image. Secondly, let :math:`q_{x}` and :math:`q_{y}` be the
+    fractional horizontal and vertical coordinates, respectively, of a point in
+    a distorted image, where :math:`\left(q_{x},q_{y}\right)=\left(0,0\right)`
+    :math:`\left[\left(q_{x},q_{y}\right)=\left(1,1\right)\right]` is the lower
+    left [upper right] corner of the lower left [upper right] pixel of the
+    distorted image.
 
     The optical distortions introduced by experiment :math:`E_{⌑}` can be
     described by a coordinate transformation, which maps a given coordinate pair
