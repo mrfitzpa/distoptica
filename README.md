@@ -6,7 +6,7 @@
 [![PyPi Version](https://img.shields.io/pypi/v/distoptica.svg)](https://pypi.org/project/distoptica)
 [![Conda-Forge Version](https://img.shields.io/conda/vn/conda-forge/distoptica.svg)](https://anaconda.org/conda-forge/distoptica)
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18286791.svg)](https://doi.org/10.5281/zenodo.18286791)
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.18286791-blue.svg)](https://doi.org/10.5281/zenodo.18286791)
 
 `distoptica` is a Python library for modelling optical distortions.
 
