@@ -33,8 +33,5 @@
     "communities": [
         {"identifier": "tem"},
 	{"identifier": "4d-stem"}
-    ],
-    "grants": [
-        {"id": "10.13039/501100000038"}
     ]
 }
