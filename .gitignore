@@ -23,6 +23,7 @@ tests/.coverage*
 
 # Ignore JSON files.
 *.json
+!.zenodo.json
 
 # Ignore backup files.
 \#*#

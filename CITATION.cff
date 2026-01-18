@@ -1,0 +1,28 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: DistOptica
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Matthew R. C.
+    family-names: Fitzpatrick
+    email: matthew.rc.fitzpatrick@gmail.com
+    affiliation: University of Victoria
+    orcid: 'https://orcid.org/0000-0001-5347-0629'
+repository-code: 'https://github.com/mrfitzpa/distoptica'
+url: 'https://mrfitzpa.github.io/distoptica/'
+abstract: >-
+  DistOptica is a Python library for modelling optical
+  distortions.
+keywords:
+  - pytorch
+  - microscopy
+  - distortion
+  - distortion correction
+license: GPL-3.0
+version: 0.4.2
+date-released: '2026-01-17'

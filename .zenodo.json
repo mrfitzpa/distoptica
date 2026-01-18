@@ -1,0 +1,40 @@
+{
+    "creators": [
+	{
+	    "name": "Fitzpatrick, Matthew R. C.",
+	    "affiliation": "University of Victoria",
+	    "orcid": "0000-0001-5347-0629"
+	}
+    ],
+    "contributors": [
+        {
+            "name": "Blackburn, Arthur",
+            "affiliation": "University of Victoria",
+            "type": "Supervisor",
+	    "orcid": "0000-0001-6874-9729"
+        }
+    ],
+    "description": "<p>DistOptica is a Python library for modelling optical distortions.</p><p>This work was part-funded by the Natural Sciences and Engineering Research Council of Canada (NSERC), from Collaborative Research and Development grant (CRDPJ 543431), partnering with Hitachi High-Tech Canada.</p>",
+    "keywords": [
+	"pytorch",
+	"microscopy",
+	"distortion",
+	"distortion correction"
+    ],
+    "license": {
+	"id": "GPL-3.0"
+    },
+    "publication_date": "2026-01-17",
+    "title": "DistOptica",
+    "version": "0.4.2",
+    "access_right": "open",
+    "upload_type": "software",
+    "language": "eng",
+    "communities": [
+        {"identifier": "tem"},
+	{"identifier": "4d-stem"}
+    ],
+    "grants": [
+        {"id": "10.13039/501100000038"}
+    ]
+}
